@@ -15,6 +15,9 @@ import {
   {{#if activities}}
   ActivityConfig,
   {{/if}}
+  {{#if services}}
+  InvokeCreator,
+  {{/if}}
 } from 'xstate';
 
 export type {{ capitalize id }}StateMatches =
@@ -79,10 +82,13 @@ export interface {{ capitalize id }}Options<Context = any, Event extends EventOb
   {{#if services}}
   services: {
     {{#each services}}
-    {{this}}: (context: Context) => Promise<
-      Extract<Event, { type: 'done.invoke.{{this}}'}> extends { 'data': infer T } ?
-        T : any
-    >
+    {{this}}: InvokeCreator<
+      Context, 
+      Extract<Event, { type: 'done.invoke.{{this}}'}>,
+      Extract<
+        Event,
+        { type: 'done.invoke.{{this}}'}> extends { 'data': infer T } ? T : any
+      > | StateMachine<any, any, any>
     {{/each}}
   };
   {{/if}}

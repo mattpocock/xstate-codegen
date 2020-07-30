@@ -34,6 +34,10 @@ export const addUserMachine = Machine<Context, Event>({
         REPORT_ERROR: 'errored',
       },
     },
-    errored: {},
+    errored: {
+      invoke: {
+        src: 'something',
+      },
+    },
   },
 });

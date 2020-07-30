@@ -8,6 +8,7 @@ import {
   EventObject,
   State,
   Interpreter,
+  InvokeCreator,
 } from 'xstate';
 
 export type AddUserMachineStateMatches = 'idle' | 'cancelled' | 'errored';
@@ -17,6 +18,19 @@ export interface AddUserMachineOptions<
   Event extends EventObject = AnyEventObject
 > {
   context?: Partial<Context>;
+  services: {
+    something:
+      | InvokeCreator<
+          Context,
+          Extract<Event, { type: 'done.invoke.something' }>,
+          Extract<Event, { type: 'done.invoke.something' }> extends {
+            data: infer T;
+          }
+            ? T
+            : any
+        >
+      | StateMachine<any, any, any>;
+  };
   devTools?: boolean;
 }
 
