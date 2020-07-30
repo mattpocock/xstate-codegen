@@ -1,6 +1,6 @@
 {
   "name": "xstate-codegen",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "index.js",
   "bin": "bin/index.js",
   "license": "MIT",
