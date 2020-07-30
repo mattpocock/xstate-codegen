@@ -4,6 +4,7 @@
   "main": "index.js",
   "bin": "bin/index.js",
   "license": "MIT",
+  "repository": "https://github.com/mattpocock/xstate-codegen",
   "dependencies": {
     "@babel/core": "^7.10.4",
     "@babel/parser": "^7.10.4",
