@@ -1,7 +1,12 @@
 /// <reference types="xstate" />
-/// <reference types="@xstate/react/lib" />
 
-import { StateNodeWithGeneratedTypes, EventObject } from 'xstate';
+import {
+  StateNodeWithGeneratedTypes,
+  EventObject,
+  MachineOptions,
+  StateWithMatches,
+  InterpreterWithMatches,
+} from 'xstate';
 import { Interpreter } from 'xstate/lib/interpreter';
 import { State } from 'xstate/lib/State';
 import { StateNode } from 'xstate/lib/StateNode';
@@ -27,6 +32,17 @@ declare module 'xstate' {
 
   type UpdatePropertyMatches = 'idle' | 'addingImage';
 
+  interface UpdatePropertyOptions {
+    services: {
+      something: any;
+    };
+    actions: {
+      awesome: any;
+    };
+  }
+
+  /** Utility types */
+
   export class StateNodeWithGeneratedTypes<
     TContext,
     TSchema,
@@ -42,14 +58,22 @@ declare module 'xstate' {
     _matches?: TMatches;
   }
 
-  interface UpdatePropertyOptions {
-    services: {
-      something?: any;
-    };
-    actions: {
-      awesome: any;
-    };
-  }
+  export type InterpreterWithMatches<
+    TContext,
+    TSchema,
+    TEvent extends EventObject,
+    TMatches
+  > = Omit<Interpreter<TContext, TSchema, TEvent>, 'state'> & {
+    state: StateWithMatches<TContext, TEvent, TMatches>;
+  };
+
+  export type StateWithMatches<
+    TContext,
+    TEvent extends EventObject,
+    TMatches
+  > = Omit<State<TContext, TEvent>, 'matches'> & {
+    matches: (matches: TMatches) => boolean;
+  };
 
   export class UpdatePropertyStateMachine extends StateNodeWithGeneratedTypes<
     UpdatePropertyContext,
@@ -65,15 +89,36 @@ declare module 'xstate' {
       UpdatePropertyEvent
     >['states'];
   }
+
+  /**
+   * Dummy interpret function
+   */
+
+  export function interpretCompiled<
+    TContext,
+    TSchema,
+    TEvent extends EventObject,
+    TMatches,
+    TOptions = MachineOptions<TContext, TEvent>
+  >(
+    machine: StateNodeWithGeneratedTypes<
+      TContext,
+      TSchema,
+      TEvent,
+      TMatches,
+      TOptions
+    >,
+    options: TOptions,
+  ): InterpreterWithMatches<TContext, TSchema, TEvent, TMatches>;
 }
 
 declare module '@xstate/react' {
-  export function useMachine<
+  export function useCompiledMachine<
     TContext,
     TSchema,
     TEvent extends EventObject,
     TMatches extends string,
-    TOptions
+    TOptions = MachineOptions<TContext, TEvent>
   >(
     machine: StateNodeWithGeneratedTypes<
       TContext,
@@ -84,10 +129,8 @@ declare module '@xstate/react' {
     >,
     options: { [K in keyof TOptions]-?: Required<TOptions[K]> },
   ): [
-    Omit<State<TContext, TEvent>, 'matches'> & {
-      matches: (matches: TMatches) => boolean;
-    },
-    Interpreter<TContext, TSchema, TEvent>['send'],
-    Interpreter<TContext, TSchema, TEvent>,
+    StateWithMatches<TContext, TEvent, TMatches>,
+    InterpreterWithMatches<TContext, TSchema, TEvent, TMatches>['send'],
+    InterpreterWithMatches<TContext, TSchema, TEvent, TMatches>,
   ];
 }

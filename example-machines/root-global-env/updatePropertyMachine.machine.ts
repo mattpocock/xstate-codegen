@@ -1,5 +1,9 @@
-import { Machine, assign, UpdatePropertyStateMachine } from 'xstate';
-import { useMachine } from '@xstate/react';
+import {
+  Machine,
+  assign,
+  UpdatePropertyStateMachine,
+  interpretCompiled,
+} from 'xstate';
 
 interface Context {
   imageId?: string;
@@ -106,12 +110,12 @@ interface Actions {
 }
 
 export const useUpdatePropertyLogic = (actions: Actions) => {
-  return useMachine(updatePropertyMachine, {
-    services: {
-      something: {},
-    },
+  const service = interpretCompiled(updatePropertyMachine, {
     actions: {
       awesome: {},
+    },
+    services: {
+      something: {},
     },
   });
 };
