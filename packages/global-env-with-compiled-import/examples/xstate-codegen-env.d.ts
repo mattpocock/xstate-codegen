@@ -13,32 +13,61 @@ import { StateNode } from 'xstate/lib/StateNode';
 
 declare module 'xstate' {
   /** Types imported via the TS Compiler API */
-  interface UpdatePropertyContext {
-    imageId?: string;
-    isDeletingImage: boolean;
+  interface LightMachineContext {
+    elapsed: number;
   }
 
-  export type UpdateMode = 'hasNewPhoto' | 'isDeletingPhoto' | 'samePhoto';
+  type LightMachineEvent =
+    | { type: 'TIMER' }
+    | { type: 'POWER_OUTAGE' }
+    | { type: 'PED_COUNTDOWN'; duration: number };
 
-  type UpdatePropertyUpdateMode =
-    | 'hasNewPhoto'
-    | 'isDeletingPhoto'
-    | 'samePhoto';
+  type LightMachineStateMatches =
+    | 'green'
+    | 'yellow'
+    | 'red'
+    | 'red.walk'
+    | 'red.wait'
+    | 'red.stop';
 
-  type UpdatePropertyEvent = {
-    type: 'UPDATE';
-    mode: UpdateMode;
-  };
-
-  type UpdatePropertyMatches = 'idle' | 'addingImage';
-
-  interface UpdatePropertyOptions {
-    services: {
-      something: any;
+  interface LightMachineOptions {
+    context?: Partial<LightMachineContext>;
+    guards: {
+      hasCompleted: (
+        context: LightMachineContext,
+        event: Extract<LightMachineEvent, { type: 'PED_COUNTDOWN' }>,
+      ) => boolean;
     };
-    actions: {
-      awesome: any;
+    devTools?: boolean;
+  }
+
+  interface LightMachineStateSchema {
+    states: {
+      green: {};
+      yellow: {};
+      red: {
+        states: {
+          walk: {};
+          wait: {};
+          stop: {};
+        };
+      };
     };
+  }
+
+  export class LightMachineStateMachine extends StateNodeWithGeneratedTypes<
+    LightMachineContext,
+    LightMachineStateSchema,
+    LightMachineEvent,
+    LightMachineStateMatches,
+    LightMachineOptions
+  > {
+    id: string;
+    states: StateNode<
+      LightMachineContext,
+      LightMachineStateSchema,
+      LightMachineEvent
+    >['states'];
   }
 
   /** Utility types */
@@ -75,25 +104,9 @@ declare module 'xstate' {
     matches: (matches: TMatches) => boolean;
   };
 
-  export class UpdatePropertyStateMachine extends StateNodeWithGeneratedTypes<
-    UpdatePropertyContext,
-    any,
-    UpdatePropertyEvent,
-    UpdatePropertyMatches,
-    UpdatePropertyOptions
-  > {
-    id: string;
-    states: StateNode<
-      UpdatePropertyContext,
-      any,
-      UpdatePropertyEvent
-    >['states'];
-  }
-
   /**
-   * Dummy interpret function
+   * Interpret function for compiled state machines
    */
-
   export function interpretCompiled<
     TContext,
     TSchema,
@@ -118,7 +131,7 @@ declare module '@xstate/react' {
     TSchema,
     TEvent extends EventObject,
     TMatches extends string,
-    TOptions = MachineOptions<TContext, TEvent>
+    TOptions
   >(
     machine: StateNodeWithGeneratedTypes<
       TContext,
@@ -127,7 +140,7 @@ declare module '@xstate/react' {
       TMatches,
       TOptions
     >,
-    options: { [K in keyof TOptions]-?: Required<TOptions[K]> },
+    options: TOptions,
   ): [
     StateWithMatches<TContext, TEvent, TMatches>,
     InterpreterWithMatches<TContext, TSchema, TEvent, TMatches>['send'],
