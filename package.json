@@ -1,22 +1,8 @@
 {
-  "name": "xstate-codegen",
+  "name": "xstate-codegen-rfc",
   "version": "0.0.4",
-  "main": "index.js",
-  "bin": "bin/index.js",
-  "license": "MIT",
+  "private": true,
   "repository": "https://github.com/mattpocock/xstate-codegen",
-  "dependencies": {
-    "@babel/core": "^7.10.4",
-    "@babel/parser": "^7.10.4",
-    "@babel/plugin-proposal-optional-chaining": "^7.10.4",
-    "@babel/plugin-transform-typescript": "^7.10.4",
-    "colors": "^1.4.0",
-    "gaze": "^1.1.3",
-    "glob": "^7.1.6",
-    "handlebars": "^4.7.6",
-    "handlebars-helpers": "^0.10.0",
-    "xstate": "^4.11.0"
-  },
   "prettier": {
     "arrowParens": "always",
     "trailingComma": "all",
@@ -24,20 +10,8 @@
     "printWidth": 80,
     "tabWidth": 2
   },
-  "devDependencies": {
-    "typescript": "^3.9.7",
-    "@changesets/cli": "^2.9.2",
-    "@types/babel__core": "^7.1.9",
-    "@types/gaze": "^1.1.0",
-    "@types/glob": "^7.1.3",
-    "@types/handlebars-helpers": "^0.5.2",
-    "@types/node": "^14.0.14",
-    "@xstate/react": "^0.8.1"
-  },
-  "scripts": {
-    "local-link": "yarn unlink && npm run build && npm run chmod:index && yarn link",
-    "build": "rm -rf bin && tsc && cp src/generatedFile.hbs bin/generatedFile.hbs",
-    "prepare": "npm run build",
-    "chmod:index": "chmod +x bin/index.js"
-  }
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {}
 }
