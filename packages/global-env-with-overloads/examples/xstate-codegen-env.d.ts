@@ -108,7 +108,7 @@ declare module 'xstate' {
   /**
    * Interpret function for compiled state machines
    */
-  export function interpretCompiled<
+  export function interpret<
     TContext,
     TSchema,
     TEvent extends EventObject,
@@ -127,7 +127,7 @@ declare module 'xstate' {
 }
 
 declare module '@xstate/react' {
-  export function useCompiledMachine<
+  export function useMachine<
     TContext,
     TSchema,
     TEvent extends EventObject,

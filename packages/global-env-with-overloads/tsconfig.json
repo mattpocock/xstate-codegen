@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "strictNullChecks": true,
+    "outDir": "bin",
+  },
+  "include": [
+    "examples"
+  ]
+}
