@@ -1,5 +1,11 @@
 # xstate-codegen
 
+## 0.0.5
+
+### Patch Changes
+
+- Fixed an issue where events passed to services were incorrectly typed.
+
 ## 0.0.4
 
 ### Patch Changes

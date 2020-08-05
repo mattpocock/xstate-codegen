@@ -86,7 +86,7 @@ export const createMachine = (filePath: string) => {
 
     const actionMaps: { [name: string]: Set<string> } = {};
     const condMaps: { [name: string]: Set<string> } = {};
-    const services: Set<string> = new Set();
+    const servicesMaps: { [name: string]: Set<string> } = {};
     let activities: string[] = [];
 
     const allStateNodes = machine.stateIds.map((id) =>
@@ -114,7 +114,9 @@ export const createMachine = (filePath: string) => {
       });
 
       node.invoke.forEach((service) => {
-        services.add(service.src);
+        if (!servicesMaps[service.src]) {
+          servicesMaps[service.src] = new Set();
+        }
       });
 
       node.transitions.forEach((transition) => {
@@ -125,6 +127,20 @@ export const createMachine = (filePath: string) => {
             }
             condMaps[transition.cond.name].add(transition.eventType);
           }
+        }
+
+        if (
+          ((transition.target as unknown) as XState.StateNode[])?.[0].invoke
+            ?.length > 0
+        ) {
+          ((transition.target as unknown) as XState.StateNode[])?.[0].invoke.forEach(
+            (service) => {
+              if (!servicesMaps[service.src]) {
+                servicesMaps[service.src] = new Set();
+              }
+              servicesMaps[service.src].add(transition.eventType);
+            },
+          );
         }
         if (transition.actions) {
           transition.actions.forEach((action) => {
@@ -157,6 +173,15 @@ export const createMachine = (filePath: string) => {
       };
     });
 
+    const serviceLines = Object.entries(servicesMaps).map(
+      ([name, serviceSet]) => {
+        return {
+          name,
+          events: Array.from(serviceSet).filter(Boolean),
+        };
+      },
+    );
+
     const hbTemplateString = fs
       .readFileSync(path.resolve(__dirname, './generatedFile.hbs'))
       .toString();
@@ -172,7 +197,7 @@ export const createMachine = (filePath: string) => {
       stateMatches: getMatchesStates(machine),
       condLines,
       actionLines,
-      services: Array.from(services),
+      services: serviceLines,
       activities: Array.from(activities),
     });
 

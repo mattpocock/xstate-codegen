@@ -5,6 +5,7 @@
   "bin": "bin/index.js",
   "author": "Matt Pocock",
   "license": "MIT",
+  "private": true,
   "dependencies": {
     "@babel/core": "^7.10.4",
     "@babel/parser": "^7.10.4",

@@ -82,12 +82,20 @@ export interface {{ capitalize id }}Options<Context = any, Event extends EventOb
   {{#if services}}
   services: {
     {{#each services}}
-    {{this}}: InvokeCreator<
+    {{this.name}}: InvokeCreator<
       Context, 
-      Extract<Event, { type: 'done.invoke.{{this}}'}>,
+      {{#if this.events}}
+      Extract<Event,
+      {{#each this.events}}
+      | { type: '{{this}}' }
+      {{/each}}
+      >
+      {{else}}
+      Event
+      {{/if}},
       Extract<
         Event,
-        { type: 'done.invoke.{{this}}'}> extends { 'data': infer T } ? T : any
+        { type: 'done.invoke.{{this.name}}'}> extends { 'data': infer T } ? T : any
       > | StateMachine<any, any, any>
     {{/each}}
   };
