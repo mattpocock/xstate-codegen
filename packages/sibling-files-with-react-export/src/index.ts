@@ -3,6 +3,9 @@
 import gaze from 'gaze';
 import { createMachine } from './createMachine';
 import path from 'path';
+import minimist from 'minimist';
+
+const { _: arrayArgs, ...objectArgs } = minimist(process.argv.slice(2));
 
 const [, , pattern] = process.argv;
 
@@ -31,7 +34,7 @@ const typedSuffix = /\.typed\.(js|ts|tsx|jsx)$/;
 
 const tsExtension = /\.(ts|tsx|js|jsx)$/;
 
-gaze(pattern, {}, function (err, watcher) {
+gaze(pattern, {}, function(err, watcher) {
   if (err) {
     console.log(err);
     process.exit(1);
@@ -58,8 +61,18 @@ gaze(pattern, {}, function (err, watcher) {
           fileName.replace(/\.(ts|js)$/, (extension) => `.typed${extension}`),
         ).gray,
     );
-    createMachine(fileName);
+    const hasErrored = createMachine(fileName);
+
+    if (objectArgs.once && hasErrored) {
+      console.log('Could not complete due to errors'.red.bold);
+      process.exit(1);
+    }
   });
+
+  if (objectArgs.once) {
+    console.log('Completed!'.green.bold);
+    process.exit(0);
+  }
 
   // @ts-ignore
   this.on('changed', (fileName) => {

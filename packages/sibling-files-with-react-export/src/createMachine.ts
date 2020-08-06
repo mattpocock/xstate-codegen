@@ -18,6 +18,7 @@ import { execSync } from 'child_process';
 import 'colors';
 
 export const createMachine = (filePath: string) => {
+  let hasErrored = false;
   try {
     const file = fs.readFileSync(filePath).toString();
     const fileWithoutImports = file
@@ -50,23 +51,17 @@ export const createMachine = (filePath: string) => {
 
     let machine: XState.StateNode;
 
-    try {
-      machine = func(
-        Machine,
-        interpret,
-        assign,
-        send,
-        sendParent,
-        spawn,
-        raise,
-        actions,
-        XState,
-      );
-    } catch (e) {
-      console.log('ERROR:'.red.bold);
-      console.log(e.toString().yellow);
-      return;
-    }
+    machine = func(
+      Machine,
+      interpret,
+      assign,
+      send,
+      sendParent,
+      spawn,
+      raise,
+      actions,
+      XState,
+    );
 
     if (!machine.id || machine.id === '(machine)') {
       throw new Error('Your machine must have an id property.');
@@ -213,5 +208,7 @@ export const createMachine = (filePath: string) => {
   } catch (e) {
     console.log('ERROR:'.red.bold);
     console.log(e.toString().yellow);
+    hasErrored = true;
   }
+  return hasErrored;
 };

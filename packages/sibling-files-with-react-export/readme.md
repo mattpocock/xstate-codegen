@@ -17,3 +17,9 @@ Watches any file with a `machine.ts` extension and adds typings for it.
 Currently only works with React, but we plan to support other frameworks soon.
 
 Enjoy!
+
+#### Once
+
+`xstate-codegen "src/**/**.machine.ts" --once`
+
+Instead of watching, run the codegen only once. Handy for CI purposes.
