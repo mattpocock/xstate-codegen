@@ -1,5 +1,11 @@
 # xstate-codegen
 
+## 0.0.6
+
+### Patch Changes
+
+- c05d513: Added a --once option for running the codegen script only once, instead of watching
+
 ## 0.0.5
 
 ### Patch Changes
