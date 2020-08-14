@@ -65,12 +65,16 @@ gaze(pattern, {}, function(err, watcher) {
 
     if (objectArgs.once && hasErrored) {
       console.log('Could not complete due to errors'.red.bold);
+      // @ts-ignore
+      this.close();
       process.exit(1);
     }
   });
 
   if (objectArgs.once) {
     console.log('Completed!'.green.bold);
+    // @ts-ignore
+    this.close();
     process.exit(0);
   }
 

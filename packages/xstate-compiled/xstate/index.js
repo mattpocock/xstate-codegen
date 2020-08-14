@@ -1,0 +1,3 @@
+const xstate = require('xstate');
+
+module.exports = xstate;
