@@ -12,11 +12,11 @@ interface LightContext {
 
 const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
   initial: 'green',
-  id: 'superMachine',
   context: { elapsed: 0 },
+  id: 'superMachine',
   on: {
     POWER_OUTAGE: {
-      target: 'red',
+      target: '.red',
     },
   },
   states: {
@@ -30,6 +30,7 @@ const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
       on: {
         TIMER: 'red',
         POWER_OUTAGE: 'red',
+        PED_COUNTDOWN: 'red',
       },
     },
     red: {
@@ -48,14 +49,14 @@ const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
           on: {
             PED_COUNTDOWN: {
               cond: 'isSuperCool',
-              target: 'stop',
+              target: 'wait',
             },
           },
         },
         stop: {
           on: {
             // Transient transition
-            '': { target: '#superMachine.green' },
+            '': { target: 'walk' },
           },
         },
       },

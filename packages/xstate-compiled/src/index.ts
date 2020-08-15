@@ -58,17 +58,21 @@ gaze(pattern, {}, async function(err, watcher) {
     process.exit(1);
   }
 
-  // console.clear();
+  console.clear();
 
   const addToCache = async (filePath) => {
     const fileContents = fs.readFileSync(filePath).toString();
-    const { machine, id } = await getMachine({ filePath, fileContents });
-    fileCache[filePath] = introspectMachine(machine, id);
+
+    if (fileContents.includes(`'@xstate/compiled'`)) {
+      const { machine, id } = await getMachine({ filePath, fileContents });
+      fileCache[filePath] = introspectMachine(machine, id);
+    }
   };
 
   await filteredFiles.reduce(async (promise, filePath) => {
     await promise;
     try {
+      console.log(`Scanning File: `.cyan.bold + toRelative(filePath).gray);
       await addToCache(filePath);
     } catch (e) {
       console.log(e);

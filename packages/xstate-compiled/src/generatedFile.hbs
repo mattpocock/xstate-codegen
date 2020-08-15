@@ -11,6 +11,12 @@ import {
   PropertyMapper,
   Condition,
   StateValue,
+  ActionObject,
+  ActionFunction,
+  ActivityConfig,
+  DoneInvokeEvent,
+  ErrorPlatformEvent,
+  InvokeCreator,
 } from 'xstate';
 import {
   StateWithMatches,
@@ -70,6 +76,10 @@ declare module '@xstate/compiled' {
               {{#each this.events}}
               | { type: '{{this}}' }
               {{/each}}
+              > extends undefined ? TEvent : Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
               >
               {{else}}
               TEvent
@@ -79,6 +89,10 @@ declare module '@xstate/compiled' {
               TContext,
               {{#if this.events}}
               Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
+              > extends undefined ? TEvent : Extract<TEvent,
               {{#each this.events}}
               | { type: '{{this}}' }
               {{/each}}
@@ -120,11 +134,7 @@ declare module '@xstate/compiled' {
       {{/if}}
       devTools?: boolean;
     };
-    _subState: {
-      targets: never;
-      sources: never;
-      states: {}
-    };
+    _subState: {{{this.machine.subState}}};
   }
   {{/each}}
 
@@ -135,6 +145,58 @@ declare module '@xstate/compiled' {
   }
 
   /** Utility types */
+
+  export type InvokeConfig<
+    TContext,
+    TEvent extends EventObject,
+    TSubState extends SubState
+  > = {
+    /**
+     * The unique identifier for the invoked machine. If not specified, this
+     * will be the machine's own `id`, or the URL (from `src`).
+     */
+    id?: string;
+    /**
+     * The source of the machine to be invoked, or the machine itself.
+     */
+    src:
+      | string
+      | StateMachine<any, any, any>
+      | InvokeCreator<TContext, TEvent, any>;
+    /**
+     * If `true`, events sent to the parent service will be forwarded to the invoked service.
+     *
+     * Default: `false`
+     */
+    autoForward?: boolean;
+    /**
+     * @deprecated
+     *
+     *  Use `autoForward` property instead of `forward`. Support for `forward` will get removed in the future.
+     */
+    forward?: boolean;
+    /**
+     * Data from the parent machine's context to set as the (partial or full) context
+     * for the invoked child machine.
+     *
+     * Data should be mapped to match the child machine's context shape.
+     */
+    data?:
+      | Mapper<TContext, TEvent, any>
+      | PropertyMapper<TContext, TEvent, any>;
+    /**
+     * The transition to take upon the invoked child machine reaching its final top-level state.
+     */
+    onDone?:
+      | string
+      | SingleOrArray<TransitionConfig<TContext, TEvent, TSubState>>;
+    /**
+     * The transition to take upon the invoked child machine sending an error event.
+     */
+    onError?:
+      | string
+      | SingleOrArray<TransitionConfig<TContext, TEvent, TSubState>>;
+  };
 
   export type RegisteredMachine<
     TContext,
@@ -352,7 +414,11 @@ declare module '@xstate/compiled' {
      * The services to invoke upon entering this state node. These services will be stopped upon exiting this state node.
      */
     invoke?: SingleOrArray<
-      | InvokeConfig<TContext, Extract<TEvent, { type: TSubState['sources'] }>>
+      | InvokeConfig<
+          TContext,
+          Extract<TEvent, { type: TSubState['sources'] }>,
+          TSubState
+        >
       | StateMachine<any, any, any>
     >;
     /**
@@ -388,7 +454,7 @@ declare module '@xstate/compiled' {
      * This is equivalent to defining a `[done(id)]` transition on this state node's `on` property.
      */
     onDone?:
-      | string
+      | TSubState['targets']
       | SingleOrArray<TransitionConfig<TContext, DoneEventObject, TSubState>>;
     /**
      * The mapping (or array) of delays (in milliseconds) to their potential transition(s).
@@ -408,7 +474,9 @@ declare module '@xstate/compiled' {
      * The activities to be started upon entering the state node,
      * and stopped upon exiting the state node.
      */
-    activities?: SingleOrArray<Activity<TContext, TEvent>>;
+    activities?: SingleOrArray<
+      Activity<TContext, Extract<TEvent, { type: TSubState['sources'] }>>
+    >;
     /**
      * @private
      */
