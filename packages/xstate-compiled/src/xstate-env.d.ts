@@ -34,7 +34,7 @@ declare module '@xstate/compiled' {
     _options: {
       context?: Partial<TContext>;
       guards: {
-        isSuperCool: (
+        hasCompleted: (
           context: TContext,
           event: Extract<TEvent, { type: 'PED_COUNTDOWN' }>,
         ) => boolean;
@@ -42,17 +42,104 @@ declare module '@xstate/compiled' {
       devTools?: boolean;
     };
     _subState: {
-      targets: never;
       sources: never;
-      states: {};
+      targets:
+        | '#lightMachine.green'
+        | '#lightMachine.yellow'
+        | '#lightMachine.red'
+        | 'yellow'
+        | 'red'
+        | 'green'
+        | 'red.wait'
+        | 'red.stop'
+        | 'red.walk';
+      states: {
+        green: {
+          states: {};
+          sources: 'TIMER';
+          targets:
+            | '#lightMachine.green'
+            | '#lightMachine.yellow'
+            | '#lightMachine.red'
+            | 'yellow'
+            | 'red'
+            | 'green'
+            | 'red.wait'
+            | 'red.stop'
+            | 'red.walk';
+        };
+        yellow: {
+          states: {};
+          sources: 'TIMER';
+          targets:
+            | '#lightMachine.green'
+            | '#lightMachine.yellow'
+            | '#lightMachine.red'
+            | 'yellow'
+            | 'red'
+            | 'green'
+            | 'red.wait'
+            | 'red.stop'
+            | 'red.walk';
+        };
+        red: {
+          sources: never;
+          targets:
+            | '#lightMachine.green'
+            | '#lightMachine.yellow'
+            | '#lightMachine.red'
+            | 'yellow'
+            | 'red'
+            | 'green'
+            | 'red.wait'
+            | 'red.stop'
+            | 'red.walk'
+            | '.wait'
+            | '.stop'
+            | '.walk';
+          states: {
+            walk: {
+              states: {};
+              sources: 'POWER_OUTAGE' | 'TIMER';
+              targets:
+                | '#lightMachine.green'
+                | '#lightMachine.yellow'
+                | '#lightMachine.red'
+                | 'wait'
+                | 'stop'
+                | 'walk';
+            };
+            wait: {
+              states: {};
+              sources: 'PED_COUNTDOWN';
+              targets:
+                | '#lightMachine.green'
+                | '#lightMachine.yellow'
+                | '#lightMachine.red'
+                | 'wait'
+                | 'stop'
+                | 'walk';
+            };
+            stop: {
+              states: {};
+              sources: 'PED_COUNTDOWN';
+              targets:
+                | '#lightMachine.green'
+                | '#lightMachine.yellow'
+                | '#lightMachine.red'
+                | 'wait'
+                | 'stop'
+                | 'walk';
+            };
+          };
+        };
+      };
     };
   }
 
   export interface RegisteredMachinesMap<TContext, TEvent extends EventObject> {
     lightMachine: LightMachineStateMachine<TContext, TEvent, 'lightMachine'>;
   }
-
-  /** Utility types */
 
   export type RegisteredMachine<
     TContext,
@@ -61,6 +148,8 @@ declare module '@xstate/compiled' {
     TContext,
     TEvent
   >];
+
+  /** Utility types */
 
   export class StateNodeWithGeneratedTypes<
     TContext,

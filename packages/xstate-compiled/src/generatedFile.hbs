@@ -21,35 +21,117 @@ import { Interpreter } from 'xstate/lib/interpreter';
 import { State } from 'xstate/lib/State';
 import { StateNode } from 'xstate/lib/StateNode';
 
+
 declare module '@xstate/compiled' {
   /** Generated Types */
-  export class LightMachineStateMachine<
+  {{#each machines}}
+  export class {{capitalize this.id}}StateMachine<
     TContext,
     TEvent extends EventObject,
-    Id extends 'lightMachine'
+    Id extends '{{ this.id }}'
   > extends StateNodeWithGeneratedTypes<TContext, any, TEvent> {
     id: Id;
     states: StateNode<TContext, any, TEvent>['states'];
-    _matches: 'green' | 'yellow' | 'red' | 'red.walk' | 'red.wait' | 'red.stop';
+    _matches:
+      {{#if this.machine.stateMatches}}
+      {{#each this.machine.stateMatches}}
+      | '{{this}}'
+      {{/each}}
+      {{else}}
+      never;
+      {{/if}}
     _options: {
       context?: Partial<TContext>;
+      {{#if this.machine.condLines}}
       guards: {
-        isSuperCool: (
+        {{#each this.machine.condLines}}
+        {{this.name}}: (
           context: TContext,
-          event: Extract<TEvent, { type: 'PED_COUNTDOWN' }>,
-        ) => boolean;
+            {{#if this.events}}
+          event:
+            Extract<TEvent,
+            {{#each this.events}}
+            | { type: '{{this}}' }
+            {{/each}}
+            >
+            {{/if}}
+          ) => boolean;
+        {{/each}}
       };
+      {{/if}}
+      {{#if this.machine.actionLines}}
+      actions: {
+        {{#each this.machine.actionLines}}
+        {{this.name}}:
+          | ActionObject<
+              TContext,
+              {{#if this.events}}
+              Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
+              >
+              {{else}}
+              TEvent
+              {{/if}}
+            >
+          | ActionFunction<
+              TContext,
+              {{#if this.events}}
+              Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
+              >
+              {{else}}
+              TEvent
+              {{/if}}
+            >;
+        {{/each}}
+      };
+      {{/if}}
+      {{#if this.machine.services}}
+      services: {
+        {{#each this.machine.services}}
+        {{this.name}}: InvokeCreator<
+          TContext, 
+          {{#if this.events}}
+          Extract<TEvent,
+          {{#each this.events}}
+          | { type: '{{this}}' }
+          {{/each}}
+          >
+          {{else}}
+          TEvent
+          {{/if}},
+          Extract<
+            TEvent,
+            { type: 'done.invoke.{{this.name}}'}> extends { 'data': infer T } ? T : any
+          > | StateMachine<any, any, any>
+        {{/each}}
+      };
+      {{/if}}
+      {{#if this.machine.activities}}
+      activities: {
+        {{#each this.machine.activities}}    
+        {{this}}: ActivityConfig<TContext, TEvent>;
+        {{/each}}
+      };
+      {{/if}}
       devTools?: boolean;
     };
     _subState: {
       targets: never;
       sources: never;
-      states: {};
+      states: {}
     };
   }
+  {{/each}}
 
   export interface RegisteredMachinesMap<TContext, TEvent extends EventObject> {
-    lightMachine: LightMachineStateMachine<TContext, TEvent, 'lightMachine'>;
+    {{#each machines}}
+    {{this.id}}: {{capitalize this.id}}StateMachine<TContext, TEvent, '{{this.id}}'>
+    {{/each}}
   }
 
   /** Utility types */

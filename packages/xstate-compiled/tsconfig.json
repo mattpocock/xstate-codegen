@@ -14,6 +14,6 @@
     "outDir": "bin",
   },
   "include": [
-    "examples",
+    "examples"
   ]
 }

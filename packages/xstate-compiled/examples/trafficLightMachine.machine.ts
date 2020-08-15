@@ -12,7 +12,7 @@ interface LightContext {
 
 const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
   initial: 'green',
-  id: 'lightMachine',
+  id: 'superMachine',
   context: { elapsed: 0 },
   on: {
     POWER_OUTAGE: {
@@ -35,7 +35,7 @@ const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
     red: {
       on: {
         TIMER: 'green',
-        POWER_OUTAGE: 'red',
+        POWER_OUTAGE: '.stop',
       },
       initial: 'walk',
       states: {
@@ -47,6 +47,7 @@ const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
         wait: {
           on: {
             PED_COUNTDOWN: {
+              cond: 'isSuperCool',
               target: 'stop',
             },
           },
@@ -54,7 +55,7 @@ const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
         stop: {
           on: {
             // Transient transition
-            '': { target: '#lightMachine.green' },
+            '': { target: '#superMachine.green' },
           },
         },
       },
@@ -67,7 +68,7 @@ const useTrafficLightMachine = () => {
   // useMachine to avoid function overload problems
   const [state, send] = useMachine(lightMachine, {
     guards: {
-      hasCompleted: (context, event) => {
+      isSuperCool: (context, event) => {
         // Note that the event here is typed exactly
         // to where the guard is used.
         return event.duration === 0 && context.elapsed > 0;
@@ -83,7 +84,7 @@ const interpretTrafficLightMachine = () => {
   // interpret to avoid function overload problems
   const interpreter = interpret(lightMachine, {
     guards: {
-      hasCompleted: (context, event) => {
+      isSuperCool: (context, event) => {
         // Note that the event here is typed exactly
         // to where the guard is used.
         return event.duration === 0 && context.elapsed > 0;
