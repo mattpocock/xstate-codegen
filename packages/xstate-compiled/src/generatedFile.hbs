@@ -188,13 +188,13 @@ declare module '@xstate/compiled' {
      * The transition to take upon the invoked child machine reaching its final top-level state.
      */
     onDone?:
-      | string
+      | TSubState['targets']
       | SingleOrArray<TransitionConfig<TContext, TEvent, TSubState>>;
     /**
      * The transition to take upon the invoked child machine sending an error event.
      */
     onError?:
-      | string
+      | TSubState['targets']
       | SingleOrArray<TransitionConfig<TContext, TEvent, TSubState>>;
   };
 

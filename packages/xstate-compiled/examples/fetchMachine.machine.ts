@@ -1,5 +1,4 @@
 import { Machine, interpret } from '@xstate/compiled';
-import { assign } from 'xstate';
 
 type Data = {
   yeah: boolean;
@@ -16,9 +15,6 @@ type Event =
 
 const machine = Machine<Context, Event, 'fetchMachine'>({
   initial: 'idle',
-  on: {
-    CANCEL: '.idle',
-  },
   states: {
     idle: {
       on: {
@@ -28,34 +24,26 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
     pending: {
       invoke: {
         src: 'makeFetch',
-        onDone: {
-          target: 'success',
-        },
-        onError: {
-          target: 'errored',
-          actions: 'reportError',
-        },
+        onDone: 'success',
       },
     },
     success: {
-      entry: 'assignFetchToState',
+      entry: ['celebrate'],
     },
-    errored: {},
   },
 });
 
 interpret(machine, {
   services: {
-    makeFetch: (context, event) => {
+    makeFetch: () => {
       return Promise.resolve({
         yeah: true,
       });
     },
   },
   actions: {
-    assignFetchToState: assign((context, event) => ({
-      data: event.data,
-    })),
-    reportError: (context, event) => {},
+    celebrate: (context, event) => {
+      console.log(event.data);
+    },
   },
 });
