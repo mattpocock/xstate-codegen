@@ -58,7 +58,7 @@ const makeSubStateFromNode = (
   };
 };
 
-const renderSubstate = (subState: SubState) => {
+const renderSubstate = (subState: SubState): string => {
   return `{
     targets: ${subState.targets};
     sources: ${subState.sources};
@@ -90,36 +90,36 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
     machine.getStateNodeById(id),
   );
 
-  allStateNodes.forEach((node) => {
+  allStateNodes?.forEach((node) => {
     nodeMaps[node.id] = {
       sources: new Set(),
       children: new Set(),
     };
   });
 
-  allStateNodes.forEach((node) => {
-    Object.values(node.states).forEach((childNode) => {
+  allStateNodes?.forEach((node) => {
+    Object.values(node.states)?.forEach((childNode) => {
       nodeMaps[node.id].children.add(childNode.id);
     });
 
     // TODO - make activities pick up the events
     // that led to them
-    node.activities.forEach((activity) => {
+    node.activities?.forEach((activity) => {
       if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== 'xstate.invoke') {
         activities.push(activity.type);
       }
     });
 
-    node.invoke.forEach((service) => {
+    node.invoke?.forEach((service) => {
       if (/\./.test(service.src)) return;
       if (!servicesMaps[service.src]) {
         servicesMaps[service.src] = new Set();
       }
     });
 
-    node.transitions.forEach((transition) => {
-      ((transition.target as unknown) as XState.StateNode[]).forEach(
+    node.transitions?.forEach((transition) => {
+      ((transition.target as unknown) as XState.StateNode[])?.forEach(
         (targetNode) => {
           nodeMaps[targetNode.id].sources.add(transition.eventType);
         },
@@ -137,7 +137,7 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
         ((transition.target as unknown) as XState.StateNode[])?.[0].invoke
           ?.length > 0
       ) {
-        ((transition.target as unknown) as XState.StateNode[])?.[0].invoke.forEach(
+        ((transition.target as unknown) as XState.StateNode[])?.[0].invoke?.forEach(
           (service) => {
             if (/\./.test(service.src)) return;
             if (!servicesMaps[service.src]) {
@@ -148,7 +148,7 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
         );
       }
       if (transition.actions) {
-        transition.actions.forEach((action) => {
+        transition.actions?.forEach((action) => {
           if (!xstateRegex.test(action.type)) {
             if (!actionMaps[action.type]) {
               actionMaps[action.type] = new Set();
@@ -164,48 +164,61 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
     });
   });
 
-  allStateNodes.forEach((node) => {
+  allStateNodes?.forEach((node) => {
     const allActions: XState.ActionObject<any, any>[] = [];
     allActions.push(...node.onExit);
     allActions.push(...node.onEntry);
 
-    allActions.forEach((action) => {
+    allActions?.forEach((action) => {
       if (xstateRegex.test(action.type) || action.exec) return;
       if (!actionMaps[action.type]) {
         actionMaps[action.type] = new Set();
       }
     });
 
-    node.onEntry.forEach((action) => {
+    node.onEntry?.forEach((action) => {
       const sources = nodeMaps[node.id].sources;
       sources?.forEach((source) => {
+        if (!actionMaps[action.type]) {
+          actionMaps[action.type] = new Set();
+        }
         actionMaps[action.type].add(source);
       });
     });
   });
 
-  const condLines = Object.entries(condMaps).map(([name, eventSet]) => {
-    return {
-      name,
-      events: Array.from(eventSet).filter(Boolean),
-    };
-  });
+  const condLines = Object.entries(condMaps)
+    .filter(([name]) => {
+      return !/\./.test(name);
+    })
+    .map(([name, eventSet]) => {
+      return {
+        name,
+        events: Array.from(eventSet).filter(Boolean),
+      };
+    });
 
-  const actionLines = Object.entries(actionMaps).map(([name, eventSet]) => {
-    return {
-      name,
-      events: Array.from(eventSet).filter(Boolean),
-    };
-  });
+  const actionLines = Object.entries(actionMaps)
+    .filter(([name]) => {
+      return !/\./.test(name);
+    })
+    .map(([name, eventSet]) => {
+      return {
+        name,
+        events: Array.from(eventSet).filter(Boolean),
+      };
+    });
 
-  const serviceLines = Object.entries(servicesMaps).map(
-    ([name, serviceSet]) => {
+  const serviceLines = Object.entries(servicesMaps)
+    .filter(([name]) => {
+      return !/\./.test(name);
+    })
+    .map(([name, serviceSet]) => {
       return {
         name,
         events: Array.from(serviceSet).filter(Boolean),
       };
-    },
-  );
+    });
 
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
 

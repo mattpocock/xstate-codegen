@@ -60,7 +60,7 @@ gaze(pattern, {}, async function(err, watcher) {
 
   console.clear();
 
-  const addToCache = async (filePath) => {
+  const addToCache = async (filePath: string) => {
     const fileContents = fs.readFileSync(filePath).toString();
 
     if (fileContents.includes(`'@xstate/compiled'`)) {

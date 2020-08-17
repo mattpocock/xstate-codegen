@@ -12,8 +12,9 @@
     "resolveJsonModule": true,
     "strictNullChecks": true,
     "outDir": "bin",
+    "baseUrl": "src"
   },
   "include": [
-    "examples"
+    "src"
   ]
 }

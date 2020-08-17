@@ -35,7 +35,7 @@ export const getMachine = async ({
     ts.ScriptTarget.Latest,
   );
 
-  let id: string;
+  let id: string | undefined = undefined;
 
   const transformer = <T extends ts.Node>(
     context: ts.TransformationContext,
@@ -75,7 +75,7 @@ export const getMachine = async ({
   ts.transform(node, [transformer]);
 
   if (!id) {
-    console.log(
+    throw new Error(
       'Could not find a valid id property passed in as a type declaration on your Machine.',
     );
   }

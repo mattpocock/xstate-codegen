@@ -17,6 +17,8 @@ import {
   DoneInvokeEvent,
   ErrorPlatformEvent,
   InvokeCreator,
+  assign,
+  send,
 } from 'xstate';
 import {
   StateWithMatches,
@@ -27,207 +29,121 @@ import { Interpreter } from 'xstate/lib/interpreter';
 import { State } from 'xstate/lib/State';
 import { StateNode } from 'xstate/lib/StateNode';
 
+
 declare module '@xstate/compiled' {
   /** Generated Types */
-  export class FetchMachineStateMachine<
+  {{#each machines}}
+  export class {{capitalize this.id}}StateMachine<
     TContext,
     TEvent extends EventObject,
-    Id extends 'fetchMachine'
-  > extends StateNodeWithGeneratedTypes<TContext, any, TEvent> {
-    id: Id;
-    states: StateNode<TContext, any, TEvent>['states'];
-    _matches: 'idle' | 'pending' | 'success';
-    _options: {
-      context?: Partial<TContext>;
-      actions: {
-        celebrate:
-          | ActionObject<
-              TContext,
-              Extract<
-                TEvent,
-                { type: 'done.invoke.makeFetch' }
-              > extends undefined
-                ? TEvent
-                : Extract<TEvent, { type: 'done.invoke.makeFetch' }>
-            >
-          | ActionFunction<
-              TContext,
-              Extract<
-                TEvent,
-                { type: 'done.invoke.makeFetch' }
-              > extends undefined
-                ? TEvent
-                : Extract<TEvent, { type: 'done.invoke.makeFetch' }>
-            >;
-      };
-      services: {
-        makeFetch:
-          | InvokeCreator<
-              TContext,
-              Extract<TEvent, { type: 'MAKE_FETCH' }>,
-              Extract<TEvent, { type: 'done.invoke.makeFetch' }> extends {
-                data: infer T;
-              }
-                ? T
-                : any
-            >
-          | StateMachine<any, any, any>;
-      };
-      devTools?: boolean;
-    };
-    _subState: {
-      targets: '.idle' | '.pending' | '.success';
-      sources: never;
-      states: {
-        idle: {
-          targets: 'idle' | 'pending' | 'success';
-          sources: never;
-          states: {};
-        };
-        pending: {
-          targets: 'idle' | 'pending' | 'success';
-          sources: 'MAKE_FETCH';
-          states: {};
-        };
-        success: {
-          targets: 'idle' | 'pending' | 'success';
-          sources: 'done.invoke.makeFetch';
-          states: {};
-        };
-      };
-    };
-  }
-  export class FaceMachineStateMachine<
-    TContext,
-    TEvent extends EventObject,
-    Id extends 'faceMachine'
+    Id extends '{{ this.id }}'
   > extends StateNodeWithGeneratedTypes<TContext, any, TEvent> {
     id: Id;
     states: StateNode<TContext, any, TEvent>['states'];
     _matches:
-      | 'eyes'
-      | 'eyes.open'
-      | 'eyes.closed'
-      | 'eyes.closed.dreaming'
-      | 'eyes.closed.awakeButPretending'
-      | 'mouth'
-      | 'mouth.open'
-      | 'mouthClosed';
+      {{#if this.machine.stateMatches}}
+      {{#each this.machine.stateMatches}}
+      | '{{this}}'
+      {{/each}}
+      {{else}}
+      never;
+      {{/if}}
     _options: {
       context?: Partial<TContext>;
-      devTools?: boolean;
-    };
-    _subState: {
-      targets: '.eyes' | '.mouth';
-      sources: never;
-      states: {
-        eyes: {
-          targets: '.open' | '.closed' | 'eyes' | 'mouth';
-          sources: never;
-          states: {
-            open: {
-              targets: 'open' | 'closed';
-              sources: 'OPEN_EYES';
-              states: {};
-            };
-            closed: {
-              targets: '.dreaming' | '.awakeButPretending' | 'open' | 'closed';
-              sources: 'CLOSE_EYES';
-              states: {
-                dreaming: {
-                  targets: 'dreaming' | 'awakeButPretending';
-                  sources: 'FALL_ASLEEP';
-                  states: {};
-                };
-                awakeButPretending: {
-                  targets: 'dreaming' | 'awakeButPretending';
-                  sources: never;
-                  states: {};
-                };
-              };
-            };
-          };
-        };
-        mouth: {
-          targets: '.open' | '.closed' | 'eyes' | 'mouth';
-          sources: never;
-          states: {
-            open: {
-              targets: 'open' | 'closed';
-              sources: 'OPEN_MOUTH';
-              states: {};
-            };
-            closed: {
-              targets: 'open' | 'closed';
-              sources: 'OPEN_MOUTH';
-              states: {};
-            };
-          };
-        };
-      };
-    };
-  }
-  export class LightMachineStateMachine<
-    TContext,
-    TEvent extends EventObject,
-    Id extends 'lightMachine'
-  > extends StateNodeWithGeneratedTypes<TContext, any, TEvent> {
-    id: Id;
-    states: StateNode<TContext, any, TEvent>['states'];
-    _matches: 'green' | 'yellow' | 'red' | 'red.walk' | 'red.wait' | 'red.stop';
-    _options: {
-      context?: Partial<TContext>;
+      {{#if this.machine.condLines}}
       guards: {
-        isSuperCool: (
+        {{#each this.machine.condLines}}
+        {{this.name}}: (
           context: TContext,
-          event: Extract<TEvent, { type: 'PED_COUNTDOWN' }>,
-        ) => boolean;
+            {{#if this.events}}
+          event:
+            Extract<TEvent,
+            {{#each this.events}}
+            | { type: '{{this}}' }
+            {{/each}}
+            >
+            {{/if}}
+          ) => boolean;
+        {{/each}}
       };
+      {{/if}}
+      {{#if this.machine.actionLines}}
+      actions: {
+        {{#each this.machine.actionLines}}
+        {{this.name}}:
+          | ActionObject<
+              TContext,
+              {{#if this.events}}
+              Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
+              > extends undefined ? TEvent : Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
+              >
+              {{else}}
+              TEvent
+              {{/if}}
+            >
+          | ActionFunction<
+              TContext,
+              {{#if this.events}}
+              Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
+              > extends undefined ? TEvent : Extract<TEvent,
+              {{#each this.events}}
+              | { type: '{{this}}' }
+              {{/each}}
+              >
+              {{else}}
+              TEvent
+              {{/if}}
+            >;
+        {{/each}}
+      };
+      {{/if}}
+      {{#if this.machine.services}}
+      services: {
+        {{#each this.machine.services}}
+        {{this.name}}: InvokeCreator<
+          TContext, 
+          {{#if this.events}}
+          Extract<TEvent,
+          {{#each this.events}}
+          | { type: '{{this}}' }
+          {{/each}}
+          >
+          {{else}}
+          TEvent
+          {{/if}},
+          Extract<
+            TEvent,
+            { type: 'done.invoke.{{this.name}}'}> extends { 'data': infer T } ? T : any
+          > | StateMachine<any, any, any>
+        {{/each}}
+      };
+      {{/if}}
+      {{#if this.machine.activities}}
+      activities: {
+        {{#each this.machine.activities}}    
+        {{this}}: ActivityConfig<TContext, TEvent>;
+        {{/each}}
+      };
+      {{/if}}
       devTools?: boolean;
     };
-    _subState: {
-      targets: '.green' | '.yellow' | '.red';
-      sources: never;
-      states: {
-        green: {
-          targets: 'green' | 'yellow' | 'red';
-          sources: 'TIMER';
-          states: {};
-        };
-        yellow: {
-          targets: 'green' | 'yellow' | 'red';
-          sources: 'TIMER';
-          states: {};
-        };
-        red: {
-          targets: '.walk' | '.wait' | '.stop' | 'green' | 'yellow' | 'red';
-          sources: 'POWER_OUTAGE' | 'TIMER' | 'PED_COUNTDOWN';
-          states: {
-            walk: {
-              targets: 'walk' | 'wait' | 'stop';
-              sources: never;
-              states: {};
-            };
-            wait: {
-              targets: 'walk' | 'wait' | 'stop';
-              sources: 'PED_COUNTDOWN';
-              states: {};
-            };
-            stop: {
-              targets: 'walk' | 'wait' | 'stop';
-              sources: 'POWER_OUTAGE';
-              states: {};
-            };
-          };
-        };
-      };
-    };
+    _subState: {{{this.machine.subState}}};
   }
+  {{/each}}
 
   export interface RegisteredMachinesMap<TContext, TEvent extends EventObject> {
-    fetchMachine: FetchMachineStateMachine<TContext, TEvent, 'fetchMachine'>;
-    faceMachine: FaceMachineStateMachine<TContext, TEvent, 'faceMachine'>;
-    lightMachine: LightMachineStateMachine<TContext, TEvent, 'lightMachine'>;
+    {{#each machines}}
+    {{this.id}}: {{capitalize this.id}}StateMachine<TContext, TEvent, '{{this.id}}'>
+    {{/each}}
   }
 
   /** Utility types */
@@ -275,13 +191,13 @@ declare module '@xstate/compiled' {
      */
     onDone?:
       | TSubState['targets']
-      | SingleOrArray<TransitionConfig<TContext, TEvent, TSubState>>;
+      | SingleOrArray<TransitionConfig<TContext, TEvent | DoneEventObject, TSubState>>;
     /**
      * The transition to take upon the invoked child machine sending an error event.
      */
     onError?:
       | TSubState['targets']
-      | SingleOrArray<TransitionConfig<TContext, TEvent, TSubState>>;
+      | SingleOrArray<TransitionConfig<TContext, TEvent | ErrorPlatformEvent, TSubState>>;
   };
 
   export type RegisteredMachine<
@@ -502,7 +418,7 @@ declare module '@xstate/compiled' {
     invoke?: SingleOrArray<
       | InvokeConfig<
           TContext,
-          Extract<TEvent, { type: TSubState['sources'] }>,
+          Extract<TEvent>,
           TSubState
         >
       | StateMachine<any, any, any>
@@ -595,27 +511,6 @@ declare module '@xstate/compiled' {
      */
     order?: number;
   }
-}
 
-declare module '@xstate/compiled/react' {
-  export function useMachine<
-    TContext,
-    TSchema,
-    TEvent extends EventObject,
-    Id extends string
-  >(
-    machine: Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>,
-    options: Extract<
-      RegisteredMachine<TContext, TEvent>,
-      { id: Id }
-    >['_options'],
-  ): [
-    StateWithMatches<
-      TContext,
-      TEvent,
-      Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>['_matches']
-    >,
-    InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
-    InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
-  ];
+  
 }
