@@ -102,13 +102,17 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
       nodeMaps[node.id].children.add(childNode.id);
     });
 
+    // TODO - make activities pick up the events
+    // that led to them
     node.activities.forEach((activity) => {
+      if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== 'xstate.invoke') {
         activities.push(activity.type);
       }
     });
 
     node.invoke.forEach((service) => {
+      if (/\./.test(service.src)) return;
       if (!servicesMaps[service.src]) {
         servicesMaps[service.src] = new Set();
       }
@@ -135,6 +139,7 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
       ) {
         ((transition.target as unknown) as XState.StateNode[])?.[0].invoke.forEach(
           (service) => {
+            if (/\./.test(service.src)) return;
             if (!servicesMaps[service.src]) {
               servicesMaps[service.src] = new Set();
             }
