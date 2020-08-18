@@ -24,6 +24,7 @@ const ensureMultipleFoldersExist = (absoluteRoot: string, paths: string[]) => {
 
 export const printToFile = (
   cache: Record<string, ReturnType<typeof introspectMachine>>,
+  outDir?: string,
 ) => {
   const indexTemplateString = fs
     .readFileSync(path.resolve(__dirname, './templates/index.d.ts.hbs'))
@@ -77,17 +78,29 @@ export const printToFile = (
   );
 
   fs.writeFileSync(
-    path.join(targetDir, 'index.d.ts'),
+    outDir
+      ? path.resolve(process.cwd(), outDir, 'index.d.ts')
+      : path.join(targetDir, 'index.d.ts'),
     indexTemplate({
       machines,
     }),
   );
   fs.writeFileSync(
-    path.join(targetDir, 'react.d.ts'),
+    outDir
+      ? path.resolve(process.cwd(), outDir, 'react.d.ts')
+      : path.join(targetDir, 'react.d.ts'),
     reactTemplate({
       machines,
     }),
   );
+
+  if (outDir) {
+    // If the user specifies an outDir, we need to add some dummy types
+    // so that we can override something
+    fs.writeFileSync(path.join(targetDir, 'react.d.ts'), `export default any;`);
+    fs.writeFileSync(path.join(targetDir, 'index.d.ts'), `export default any;`);
+  }
+
   fs.writeFileSync(path.join(targetDir, 'index.js'), indexJsTemplate);
   fs.writeFileSync(path.join(targetDir, 'react.js'), reactJsTemplate);
   fs.writeFileSync(path.join(targetDir, 'package.json'), packageJsonTemplate);

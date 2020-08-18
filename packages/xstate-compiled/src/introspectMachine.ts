@@ -112,9 +112,11 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
     });
 
     node.invoke?.forEach((service) => {
-      if (/\./.test(service.src)) return;
-      if (!servicesMaps[service.src]) {
-        servicesMaps[service.src] = new Set();
+      if (typeof service.src === 'string') {
+        if (/\./.test(service.src)) return;
+        if (!servicesMaps[service.src]) {
+          servicesMaps[service.src] = new Set();
+        }
       }
     });
 
@@ -139,11 +141,13 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
       ) {
         ((transition.target as unknown) as XState.StateNode[])?.[0].invoke?.forEach(
           (service) => {
-            if (/\./.test(service.src)) return;
-            if (!servicesMaps[service.src]) {
-              servicesMaps[service.src] = new Set();
+            if (typeof service.src === 'string') {
+              if (/\./.test(service.src)) return;
+              if (!servicesMaps[service.src]) {
+                servicesMaps[service.src] = new Set();
+              }
+              servicesMaps[service.src].add(transition.eventType);
             }
-            servicesMaps[service.src].add(transition.eventType);
           },
         );
       }
