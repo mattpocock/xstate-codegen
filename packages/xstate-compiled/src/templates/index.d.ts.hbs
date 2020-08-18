@@ -418,7 +418,7 @@ declare module '@xstate/compiled' {
     invoke?: SingleOrArray<
       | InvokeConfig<
           TContext,
-          Extract<TEvent>,
+          TEvent,
           TSubState
         >
       | StateMachine<any, any, any>

@@ -1,5 +1,5 @@
 {
-  "name": "xstate-codegen",
+  "name": "xstate-codegen-2",
   "version": "0.0.4",
   "main": "index.js",
   "bin": "bin/index.js",
