@@ -1,5 +1,6 @@
 import 'colors';
 import * as XState from 'xstate';
+import { toStateValue, toStatePaths, pathToStateValue } from 'xstate/lib/utils';
 
 export interface SubState {
   targets: string;
@@ -8,13 +9,18 @@ export interface SubState {
 }
 
 export const getMatchesStates = (machine: XState.StateNode) => {
-  const id = machine.id || '(machine)';
-
-  const validStates = machine.stateIds.map((stateId) =>
-    stateId.replace(/^((\w|\(|\)){0,})\./, ''),
+  const allStateNodes = machine.stateIds.map((id) =>
+    machine.getStateNodeById(id),
   );
 
-  const states = validStates.filter((state) => state !== id);
+  const states = allStateNodes.reduce((arr: string[], node) => {
+    return [
+      ...arr,
+      ...toStatePaths(pathToStateValue(node.path)).map((path) =>
+        path.join('.'),
+      ),
+    ];
+  }, [] as string[]);
 
   return states;
 };
@@ -91,6 +97,10 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
   );
 
   allStateNodes?.forEach((node) => {
+    console.log(
+      node.id,
+      node.getRelativeStateNodes(node).map((node) => node.path),
+    );
     nodeMaps[node.id] = {
       sources: new Set(),
       children: new Set(),
@@ -112,11 +122,9 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
     });
 
     node.invoke?.forEach((service) => {
-      if (typeof service.src === 'string') {
-        if (/\./.test(service.src)) return;
-        if (!servicesMaps[service.src]) {
-          servicesMaps[service.src] = new Set();
-        }
+      if (typeof service.src !== 'string' || /\./.test(service.src)) return;
+      if (!servicesMaps[service.src]) {
+        servicesMaps[service.src] = new Set();
       }
     });
 
@@ -141,13 +149,12 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
       ) {
         ((transition.target as unknown) as XState.StateNode[])?.[0].invoke?.forEach(
           (service) => {
-            if (typeof service.src === 'string') {
-              if (/\./.test(service.src)) return;
-              if (!servicesMaps[service.src]) {
-                servicesMaps[service.src] = new Set();
-              }
-              servicesMaps[service.src].add(transition.eventType);
+            if (typeof service.src !== 'string' || /\./.test(service.src))
+              return;
+            if (!servicesMaps[service.src]) {
+              servicesMaps[service.src] = new Set();
             }
+            servicesMaps[service.src].add(transition.eventType);
           },
         );
       }
