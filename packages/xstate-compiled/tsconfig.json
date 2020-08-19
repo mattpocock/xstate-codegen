@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -14,7 +12,5 @@
     "outDir": "bin",
     "baseUrl": "src"
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src", "modules.d.ts"]
 }
