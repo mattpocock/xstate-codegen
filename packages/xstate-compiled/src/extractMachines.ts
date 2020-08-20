@@ -262,16 +262,14 @@ export const extractMachines = async (
             return {
               name: 'xstate-codegen-machines-extractor',
               visitor: {
-                Program(path: babelCore.NodePath, state: babelCore.PluginPass) {
-                  if (state.filename !== resolvedFilePath) {
-                    path.stop();
-                  }
-                },
                 ImportDeclaration(
                   path: babelCore.NodePath<babelCore.types.ImportDeclaration>,
                   state: babelCore.PluginPass,
                 ) {
-                  if (path.node.source.value !== '@xstate/compiled') {
+                  if (
+                    state.filename !== resolvedFilePath ||
+                    path.node.source.value !== '@xstate/compiled'
+                  ) {
                     return;
                   }
 
