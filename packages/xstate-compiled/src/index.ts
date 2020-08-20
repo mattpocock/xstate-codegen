@@ -61,6 +61,10 @@ gaze(pattern, {}, async function(err, watcher) {
   console.clear();
 
   const addToCache = async (filePath: string) => {
+    const code = fs.readFileSync(filePath, 'utf8');
+    if (!code.includes('@xstate/compiled')) {
+      return;
+    }
     const machines = await extractMachines(filePath);
     if (machines.length === 0) {
       return;
