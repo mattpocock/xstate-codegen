@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import minimist from 'minimist';
 import { introspectMachine } from './introspectMachine';
-import { getMachine } from './getMachine';
+import { extractMachines } from './extractMachines';
 import { printToFile } from './printToFile';
 
 const { _: arrayArgs, ...objectArgs } = minimist(process.argv.slice(2));
@@ -61,12 +61,16 @@ gaze(pattern, {}, async function(err, watcher) {
   console.clear();
 
   const addToCache = async (filePath: string) => {
-    const fileContents = fs.readFileSync(filePath).toString();
-
-    if (fileContents.includes(`'@xstate/compiled'`)) {
-      const { machine, id } = await getMachine({ filePath, fileContents });
-      fileCache[filePath] = introspectMachine(machine, id);
+    const code = fs.readFileSync(filePath, 'utf8');
+    if (!code.includes('@xstate/compiled')) {
+      return;
     }
+    const machines = await extractMachines(filePath);
+    if (machines.length === 0) {
+      return;
+    }
+    const { machine, id } = machines[0];
+    fileCache[filePath] = introspectMachine(machine, id);
   };
 
   await filteredFiles.reduce(async (promise, filePath) => {
