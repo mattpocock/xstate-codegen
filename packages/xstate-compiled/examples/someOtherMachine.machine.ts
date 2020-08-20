@@ -30,6 +30,23 @@ const faceMachine = Machine<FaceContext, FaceEvent, 'faceMachine'>({
             CLOSE_EYES: 'closed',
           },
         },
+        middle: {
+          initial: 'closing',
+          after: {
+            8000: [
+              {
+                cond: 'checkingIfCanGoCool',
+                target: '.somethingCool',
+              },
+            ],
+          },
+          states: {
+            closing: {},
+            somethingCool: {
+              always: 'closing',
+            },
+          },
+        },
         closed: {
           on: {
             OPEN_EYES: 'open',
@@ -68,14 +85,13 @@ const faceMachine = Machine<FaceContext, FaceEvent, 'faceMachine'>({
 const useTrafficLightMachine = () => {
   // We use useCompiledMachine instead of
   // useMachine to avoid function overload problems
-  const [state, send] = useMachine(faceMachine, {});
+  const [state, send] = useMachine(faceMachine, {
+    guards: {
+      checkingIfCanGoCool: () => {
+        return false;
+      },
+    },
+  });
 
   return [state, send];
-};
-
-const interpretTrafficLightMachine = () => {
-  // We use interpretCompiled instead of
-  // interpret to avoid function overload problems
-  const interpreter = interpret(faceMachine, {});
-  return interpreter;
 };

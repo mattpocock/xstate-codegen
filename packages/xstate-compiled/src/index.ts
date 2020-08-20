@@ -85,7 +85,7 @@ gaze(pattern, {}, async function(err, watcher) {
     }
   }, Promise.resolve());
 
-  printToFile(fileCache);
+  printToFile(fileCache, objectArgs.outDir);
 
   if (objectArgs.once) {
     console.log('Completed!'.green.bold);
@@ -99,14 +99,14 @@ gaze(pattern, {}, async function(err, watcher) {
     console.clear();
     console.log(`File Changed: `.cyan.bold + toRelative(filePath).gray);
     await addToCache(filePath);
-    printToFile(fileCache);
+    printToFile(fileCache, objectArgs.outDir);
   });
   // @ts-ignore
   this.on('added', async (filePath) => {
     console.clear();
     console.log(`File Added: `.green.bold + toRelative(filePath).gray);
     await addToCache(filePath);
-    printToFile(fileCache);
+    printToFile(fileCache, objectArgs.outDir);
   });
 
   console.log(`Watching for file changes in: `.cyan.bold + pattern.gray);

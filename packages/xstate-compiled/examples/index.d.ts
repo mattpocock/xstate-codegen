@@ -33,118 +33,272 @@ import { StateNode } from 'xstate/lib/StateNode';
 
 declare module '@xstate/compiled' {
   /** Generated Types */
-  {{#each machines}}
-  export class {{capitalize this.id}}StateMachine<
+  export class FetchMachineStateMachine<
     TContext,
     TEvent extends EventObject,
-    Id extends '{{ this.id }}'
+    Id extends 'fetchMachine'
   > extends StateNodeWithGeneratedTypes<TContext, any, TEvent> {
     id: Id;
     states: StateNode<TContext, any, TEvent>['states'];
     _matches:
-      {{#if this.machine.stateMatches}}
-      {{#each this.machine.stateMatches}}
-      | '{{this}}'
-      {{/each}}
-      {{else}}
-      never;
-      {{/if}}
+      | 'idle'
+      | 'pending'
+      | 'success'
     _options: {
       context?: Partial<TContext>;
-      {{#if this.machine.condLines}}
-      guards: {
-        {{#each this.machine.condLines}}
-        {{this.name}}: (
-          context: TContext,
-            {{#if this.events}}
-          event:
-            Extract<TEvent,
-            {{#each this.events}}
-            | { type: '{{this}}' }
-            {{/each}}
-            >
-            {{/if}}
-          ) => boolean;
-        {{/each}}
-      };
-      {{/if}}
-      {{#if this.machine.actionLines}}
       actions: {
-        {{#each this.machine.actionLines}}
-        {{this.name}}:
+        celebrate:
           | ActionObject<
               TContext,
-              {{#if this.events}}
               Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
+              | { type: 'done.invoke.makeFetch' }
               > extends undefined ? TEvent : Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
+              | { type: 'done.invoke.makeFetch' }
               >
-              {{else}}
-              TEvent
-              {{/if}}
             >
           | ActionFunction<
               TContext,
-              {{#if this.events}}
               Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
+              | { type: 'done.invoke.makeFetch' }
               > extends undefined ? TEvent : Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
+              | { type: 'done.invoke.makeFetch' }
               >
-              {{else}}
-              TEvent
-              {{/if}}
             >;
-        {{/each}}
       };
-      {{/if}}
-      {{#if this.machine.services}}
       services: {
-        {{#each this.machine.services}}
-        {{this.name}}: InvokeCreator<
+        makeFetch: InvokeCreator<
           TContext, 
-          {{#if this.events}}
           Extract<TEvent,
-          {{#each this.events}}
-          | { type: '{{this}}' }
-          {{/each}}
+          | { type: 'MAKE_FETCH' }
           >
-          {{else}}
-          DoneEventObject
-          {{/if}},
+,
           Extract<
             TEvent,
-            { type: 'done.invoke.{{this.name}}'}> extends { 'data': infer T } ? T : any
+            { type: 'done.invoke.makeFetch'}> extends { 'data': infer T } ? T : any
           > | StateMachine<any, any, any>
-        {{/each}}
       };
-      {{/if}}
-      {{#if this.machine.activities}}
-      activities: {
-        {{#each this.machine.activities}}    
-        {{this}}: ActivityConfig<TContext, TEvent>;
-        {{/each}}
-      };
-      {{/if}}
       devTools?: boolean;
     };
-    _subState: {{{this.machine.subState}}};
+    _subState: {
+    targets: '.idle' | '.pending' | '.success';
+    sources: never;
+    states: {
+      idle: {
+    targets: 'idle' | 'pending' | 'success';
+    sources: never;
+    states: {
+      
+    };
   }
-  {{/each}}
+pending: {
+    targets: 'idle' | 'pending' | 'success';
+    sources: 'MAKE_FETCH';
+    states: {
+      
+    };
+  }
+success: {
+    targets: 'idle' | 'pending' | 'success';
+    sources: 'done.invoke.makeFetch';
+    states: {
+      
+    };
+  }
+    };
+  };
+  }
+  export class FaceMachineStateMachine<
+    TContext,
+    TEvent extends EventObject,
+    Id extends 'faceMachine'
+  > extends StateNodeWithGeneratedTypes<TContext, any, TEvent> {
+    id: Id;
+    states: StateNode<TContext, any, TEvent>['states'];
+    _matches:
+      | 'eyes'
+      | 'eyes.open'
+      | 'eyes.middle'
+      | 'eyes.middle.closing'
+      | 'eyes.middle.somethingCool'
+      | 'eyes.closed'
+      | 'eyes.closed.dreaming'
+      | 'eyes.closed.awakeButPretending'
+      | 'mouth'
+      | 'mouth.open'
+      | 'mouthClosed'
+    _options: {
+      context?: Partial<TContext>;
+      guards: {
+        checkingIfCanGoCool: (
+          context: TContext,
+          event:
+            Extract<TEvent,
+            | { type: 'xstate.after(8000)#(machine).eyes.middle' }
+            >
+          ) => boolean;
+      };
+      devTools?: boolean;
+    };
+    _subState: {
+    targets: '.eyes' | '.mouth';
+    sources: never;
+    states: {
+      eyes: {
+    targets: '.open' | '.middle' | '.closed' | 'eyes' | 'mouth';
+    sources: never;
+    states: {
+      open: {
+    targets: 'open' | 'middle' | 'closed';
+    sources: 'OPEN_EYES';
+    states: {
+      
+    };
+  }
+middle: {
+    targets: '.closing' | '.somethingCool' | 'open' | 'middle' | 'closed';
+    sources: never;
+    states: {
+      closing: {
+    targets: 'closing' | 'somethingCool';
+    sources: never;
+    states: {
+      
+    };
+  }
+somethingCool: {
+    targets: 'closing' | 'somethingCool';
+    sources: 'xstate.after(8000)#(machine).eyes.middle';
+    states: {
+      
+    };
+  }
+    };
+  }
+closed: {
+    targets: '.dreaming' | '.awakeButPretending' | 'open' | 'middle' | 'closed';
+    sources: 'CLOSE_EYES';
+    states: {
+      dreaming: {
+    targets: 'dreaming' | 'awakeButPretending';
+    sources: 'FALL_ASLEEP';
+    states: {
+      
+    };
+  }
+awakeButPretending: {
+    targets: 'dreaming' | 'awakeButPretending';
+    sources: never;
+    states: {
+      
+    };
+  }
+    };
+  }
+    };
+  }
+mouth: {
+    targets: '.open' | '.closed' | 'eyes' | 'mouth';
+    sources: never;
+    states: {
+      open: {
+    targets: 'open' | 'closed';
+    sources: 'OPEN_MOUTH';
+    states: {
+      
+    };
+  }
+closed: {
+    targets: 'open' | 'closed';
+    sources: 'OPEN_MOUTH';
+    states: {
+      
+    };
+  }
+    };
+  }
+    };
+  };
+  }
+  export class LightMachineStateMachine<
+    TContext,
+    TEvent extends EventObject,
+    Id extends 'lightMachine'
+  > extends StateNodeWithGeneratedTypes<TContext, any, TEvent> {
+    id: Id;
+    states: StateNode<TContext, any, TEvent>['states'];
+    _matches:
+      | 'green'
+      | 'yellow'
+      | 'red'
+      | 'red.walk'
+      | 'red.wait'
+      | 'red.stop'
+    _options: {
+      context?: Partial<TContext>;
+      guards: {
+        isSuperCool: (
+          context: TContext,
+          event:
+            Extract<TEvent,
+            | { type: 'PED_COUNTDOWN' }
+            >
+          ) => boolean;
+      };
+      devTools?: boolean;
+    };
+    _subState: {
+    targets: '.green' | '.yellow' | '.red';
+    sources: never;
+    states: {
+      green: {
+    targets: 'green' | 'yellow' | 'red';
+    sources: 'TIMER';
+    states: {
+      
+    };
+  }
+yellow: {
+    targets: 'green' | 'yellow' | 'red';
+    sources: 'TIMER';
+    states: {
+      
+    };
+  }
+red: {
+    targets: '.walk' | '.wait' | '.stop' | 'green' | 'yellow' | 'red';
+    sources: 'POWER_OUTAGE' | 'TIMER' | 'PED_COUNTDOWN';
+    states: {
+      walk: {
+    targets: 'walk' | 'wait' | 'stop';
+    sources: never;
+    states: {
+      
+    };
+  }
+wait: {
+    targets: 'walk' | 'wait' | 'stop';
+    sources: 'PED_COUNTDOWN';
+    states: {
+      
+    };
+  }
+stop: {
+    targets: 'walk' | 'wait' | 'stop';
+    sources: 'POWER_OUTAGE';
+    states: {
+      
+    };
+  }
+    };
+  }
+    };
+  };
+  }
 
   export interface RegisteredMachinesMap<TContext, TEvent extends EventObject> {
-    {{#each machines}}
-    {{this.id}}: {{capitalize this.id}}StateMachine<TContext, TEvent, '{{this.id}}'>
-    {{/each}}
+    fetchMachine: FetchMachineStateMachine<TContext, TEvent, 'fetchMachine'>
+    faceMachine: FaceMachineStateMachine<TContext, TEvent, 'faceMachine'>
+    lightMachine: LightMachineStateMachine<TContext, TEvent, 'lightMachine'>
   }
 
   /** Utility types */
