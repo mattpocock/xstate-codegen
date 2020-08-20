@@ -1,6 +1,7 @@
 import 'colors';
 import * as XState from 'xstate';
 import { toStateValue, toStatePaths, pathToStateValue } from 'xstate/lib/utils';
+import { getTransitionsFromNode } from './traversalUtils';
 
 export interface SubState {
   targets: string;
@@ -39,10 +40,7 @@ const makeSubStateFromNode = (
 
   const stateNode = rootNode.getStateNodeById(node.id);
 
-  const targets = new Set([
-    ...Object.keys(stateNode.states).map((state) => `.${state}`),
-    ...(stateNode.parent ? Object.keys(stateNode.parent.states) : []),
-  ]);
+  const targets = getTransitionsFromNode(stateNode);
   return {
     sources:
       Array.from(nodeFromMap.sources)
@@ -97,10 +95,6 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
   );
 
   allStateNodes?.forEach((node) => {
-    console.log(
-      node.id,
-      node.getRelativeStateNodes(node).map((node) => node.path),
-    );
     nodeMaps[node.id] = {
       sources: new Set(),
       children: new Set(),

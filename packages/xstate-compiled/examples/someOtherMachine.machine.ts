@@ -36,7 +36,7 @@ const faceMachine = Machine<FaceContext, FaceEvent, 'faceMachine'>({
             8000: [
               {
                 cond: 'checkingIfCanGoCool',
-                target: '.somethingCool',
+                target: 'open',
               },
             ],
           },

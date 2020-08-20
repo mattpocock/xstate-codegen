@@ -192,13 +192,13 @@ declare module '@xstate/compiled' {
      */
     onDone?:
       | TSubState['targets']
-      | SingleOrArray<TransitionConfig<TContext, TEvent | DoneEventObject, TSubState>>;
+      | SingleOrArray<TransitionConfig<TContext, DoneEventObject, TSubState>>;
     /**
      * The transition to take upon the invoked child machine sending an error event.
      */
     onError?:
       | TSubState['targets']
-      | SingleOrArray<TransitionConfig<TContext, TEvent | ErrorPlatformEvent, TSubState>>;
+      | SingleOrArray<TransitionConfig<TContext, ErrorPlatformEvent, TSubState>>;
   };
 
   export type RegisteredMachine<

@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "types": ["node"],
+    "types": [
+      "node",
+      "jest"
+    ],
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -12,5 +15,8 @@
     "outDir": "bin",
     "baseUrl": "src"
   },
-  "include": ["src", "modules.d.ts"]
+  "include": [
+    "src",
+    "modules.d.ts"
+  ]
 }
