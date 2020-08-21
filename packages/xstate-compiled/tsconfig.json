@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    "types": [
-      "node",
-      "jest"
-    ],
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -17,6 +13,7 @@
   },
   "include": [
     "src",
+    "examples",
     "modules.d.ts"
   ]
 }

@@ -1,5 +1,4 @@
 import { Machine, interpret } from '@xstate/compiled';
-import { useMachine } from '@xstate/compiled/react';
 
 type FaceEvent =
   | { type: 'OPEN_MOUTH'; wordToSay: string }
@@ -85,13 +84,11 @@ const faceMachine = Machine<FaceContext, FaceEvent, 'faceMachine'>({
 const useTrafficLightMachine = () => {
   // We use useCompiledMachine instead of
   // useMachine to avoid function overload problems
-  const [state, send] = useMachine(faceMachine, {
+  const interpreter = interpret(faceMachine, {
     guards: {
       checkingIfCanGoCool: () => {
         return false;
       },
     },
   });
-
-  return [state, send];
 };

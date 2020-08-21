@@ -72,15 +72,26 @@ export const printToFile = (
     'compiled',
   ]);
 
+  ensureMultipleFoldersExist(path.dirname(packageJson), [
+    'node_modules',
+    '@types',
+    'xstate__compiled',
+  ]);
+
   const targetDir = path.resolve(
     path.dirname(packageJson),
     'node_modules/@xstate/compiled',
   );
 
+  const targetTypesDir = path.resolve(
+    path.dirname(packageJson),
+    'node_modules/@types/xstate__compiled',
+  );
+
   fs.writeFileSync(
     outDir
       ? path.resolve(process.cwd(), outDir, 'index.d.ts')
-      : path.join(targetDir, 'index.d.ts'),
+      : path.join(targetTypesDir, 'index.d.ts'),
     indexTemplate({
       machines,
     }),
@@ -88,7 +99,7 @@ export const printToFile = (
   fs.writeFileSync(
     outDir
       ? path.resolve(process.cwd(), outDir, 'react.d.ts')
-      : path.join(targetDir, 'react.d.ts'),
+      : path.join(targetTypesDir, 'react.d.ts'),
     reactTemplate({
       machines,
     }),
@@ -97,8 +108,14 @@ export const printToFile = (
   if (outDir) {
     // If the user specifies an outDir, we need to add some dummy types
     // so that we can override something
-    fs.writeFileSync(path.join(targetDir, 'react.d.ts'), `export default any;`);
-    fs.writeFileSync(path.join(targetDir, 'index.d.ts'), `export default any;`);
+    fs.writeFileSync(
+      path.join(targetTypesDir, 'react.d.ts'),
+      `export default any;`,
+    );
+    fs.writeFileSync(
+      path.join(targetTypesDir, 'index.d.ts'),
+      `export default any;`,
+    );
   }
 
   fs.writeFileSync(path.join(targetDir, 'index.js'), indexJsTemplate);
