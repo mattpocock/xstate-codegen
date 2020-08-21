@@ -3,7 +3,7 @@ import fs from 'fs';
 import Handlebars from 'handlebars';
 import helpers from 'handlebars-helpers';
 import path from 'path';
-import { introspectMachine } from './introspectMachine';
+import { introspectMachine, SubState } from './introspectMachine';
 import pkgUp from 'pkg-up';
 
 const ensureFolderExists = (absoluteDir: string) => {
@@ -22,8 +22,22 @@ const ensureMultipleFoldersExist = (absoluteRoot: string, paths: string[]) => {
   });
 };
 
+const renderSubstate = (subState: SubState): string => {
+  return `{
+    targets: ${subState.targets};
+    sources: ${subState.sources};
+    states: {
+      ${Object.entries(subState.states)
+        .map(([key, state]) => {
+          return `${key}: ${renderSubstate(state)}`;
+        })
+        .join('\n')}
+    };
+  }`;
+};
+
 export const printToFile = (
-  cache: Record<string, ReturnType<typeof introspectMachine>>,
+  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
   outDir?: string,
 ) => {
   const indexTemplateString = fs
@@ -55,7 +69,10 @@ export const printToFile = (
 
   const machines = Object.values(cache).map((machine) => ({
     id: machine.id,
-    machine,
+    machine: {
+      ...machine,
+      subState: renderSubState(machine.subState),
+    },
   }));
 
   const packageJson = pkgUp.sync();
