@@ -4,6 +4,7 @@
   "main": "index.js",
   "bin": "bin/index.js",
   "author": "Matt Pocock",
+  "private": true,
   "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.10.4",

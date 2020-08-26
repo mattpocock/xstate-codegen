@@ -3,7 +3,6 @@
   "version": "0.1.0-next.0",
   "main": "index.js",
   "bin": "bin/index.js",
-  "private": true,
   "author": "Matt Pocock",
   "license": "MIT",
   "dependencies": {
