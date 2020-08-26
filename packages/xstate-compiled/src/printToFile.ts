@@ -36,9 +36,8 @@ const renderSubstate = (subState: SubState): string => {
   }`;
 };
 
-export const printToFile = (
+export const getFileTexts = (
   cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
-  outDir?: string,
 ) => {
   const indexTemplateString = fs
     .readFileSync(path.resolve(__dirname, './templates/index.d.ts.hbs'))
@@ -71,10 +70,23 @@ export const printToFile = (
     id: machine.id,
     machine: {
       ...machine,
-      subState: renderSubState(machine.subState),
+      subState: renderSubstate(machine.subState),
     },
   }));
 
+  return {
+    'index.d.ts': indexTemplate({ machines }),
+    'react.d.ts': reactTemplate({ machines }),
+    'index.js': indexJsTemplate,
+    'react.js': reactJsTemplate,
+    'package.json': packageJsonTemplate,
+  };
+};
+
+export const printToFile = (
+  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
+  outDir?: string,
+) => {
   const packageJson = pkgUp.sync();
 
   if (!packageJson) {
@@ -94,21 +106,19 @@ export const printToFile = (
     'node_modules/@xstate/compiled',
   );
 
+  const files = getFileTexts(cache);
+
   fs.writeFileSync(
     outDir
       ? path.resolve(process.cwd(), outDir, 'index.d.ts')
       : path.join(targetDir, 'index.d.ts'),
-    indexTemplate({
-      machines,
-    }),
+    files['index.d.ts'],
   );
   fs.writeFileSync(
     outDir
       ? path.resolve(process.cwd(), outDir, 'react.d.ts')
       : path.join(targetDir, 'react.d.ts'),
-    reactTemplate({
-      machines,
-    }),
+    files['react.d.ts'],
   );
 
   if (outDir) {
@@ -118,7 +128,7 @@ export const printToFile = (
     fs.writeFileSync(path.join(targetDir, 'index.d.ts'), `export default any;`);
   }
 
-  fs.writeFileSync(path.join(targetDir, 'index.js'), indexJsTemplate);
-  fs.writeFileSync(path.join(targetDir, 'react.js'), reactJsTemplate);
-  fs.writeFileSync(path.join(targetDir, 'package.json'), packageJsonTemplate);
+  fs.writeFileSync(path.join(targetDir, 'index.js'), files['index.js']);
+  fs.writeFileSync(path.join(targetDir, 'react.js'), files['react.js']);
+  fs.writeFileSync(path.join(targetDir, 'package.json'), files['package.json']);
 };
