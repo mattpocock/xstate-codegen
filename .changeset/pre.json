@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "global-env-with-compiled-import": "0.0.4",
+    "global-env-with-overloads": "0.0.4",
+    "xstate-codegen-old": "0.0.6",
+    "xstate-codegen": "0.0.4"
+  },
+  "changesets": [
+    "quick-foxes-eat"
+  ]
+}
