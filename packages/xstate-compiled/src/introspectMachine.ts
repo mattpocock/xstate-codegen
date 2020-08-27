@@ -123,21 +123,20 @@ export const introspectMachine = (machine: XState.StateNode) => {
         }
       }
 
-      if (
-        ((transition.target as unknown) as XState.StateNode[])?.[0].invoke
-          ?.length > 0
-      ) {
-        ((transition.target as unknown) as XState.StateNode[])?.[0].invoke?.forEach(
-          (service) => {
+      ((transition.target as unknown) as XState.StateNode[])?.forEach(
+        (targetNode) => {
+          /** Pick up invokes */
+          targetNode.invoke?.forEach((service) => {
             if (typeof service.src !== 'string' || /\./.test(service.src))
               return;
             if (!servicesMaps[service.src]) {
               servicesMaps[service.src] = new Set();
             }
             servicesMaps[service.src].add(transition.eventType);
-          },
-        );
-      }
+          });
+        },
+      );
+
       if (transition.actions) {
         transition.actions?.forEach((action) => {
           if (!xstateRegex.test(action.type)) {
