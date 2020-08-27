@@ -1,5 +1,11 @@
 # xstate-codegen
 
+## 0.1.0-next.2
+
+### Patch Changes
+
+- 101fd74: Added type compatible useService to the react type declaration template. It is used for spawned xstate-codegen machines.
+
 ## 0.1.0-next.1
 
 ### Patch Changes
