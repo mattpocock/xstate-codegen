@@ -525,5 +525,22 @@ declare module '@xstate/compiled/react' {
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
   ];
+
+  export function useService<
+    TContext,
+    TSchema,
+    TEvent extends EventObject,
+    Id extends string
+  >(
+    service: InterpreterWithMatches<TContext, TSchema, TEvent, Id>
+  ): [
+    StateWithMatches<
+      TContext,
+      TEvent,
+      Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>['_matches']
+    >,
+    InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
+    InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
+  ];
 }"
 `;
