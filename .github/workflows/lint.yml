@@ -14,9 +14,11 @@ jobs:
       - name: Typecheck
         run: yarn x tsc
 
-      - uses: mattallty/jest-github-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Test
+        run: yarn x test --coverage
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v2
         with:
-          test-command: 'yarn test --coverage'
-          working-directory: 'packages/xstate-compiled'
+          name: coverage-report
+          path: packages/xstate-compiled/coverage
