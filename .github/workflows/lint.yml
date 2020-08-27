@@ -16,9 +16,3 @@ jobs:
 
       - name: Test
         run: yarn x test --coverage
-
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage-report
-          path: packages/xstate-compiled/coverage
