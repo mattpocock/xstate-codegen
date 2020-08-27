@@ -13,5 +13,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {}
+  "scripts": {
+    "x": "yarn workspace xstate-codegen"
+  }
 }

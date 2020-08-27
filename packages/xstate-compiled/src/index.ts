@@ -37,7 +37,10 @@ const typedSuffix = /\.typed\.(js|ts|tsx|jsx)$/;
 
 const tsExtension = /\.(ts|tsx|js|jsx)$/;
 
-let fileCache: Record<string, ReturnType<typeof introspectMachine>> = {};
+let fileCache: Record<
+  string,
+  ReturnType<typeof introspectMachine> & { id: string }
+> = {};
 
 gaze(pattern, {}, async function(err, watcher) {
   if (err) {
@@ -70,7 +73,7 @@ gaze(pattern, {}, async function(err, watcher) {
       return;
     }
     const { machine, id } = machines[0];
-    fileCache[filePath] = introspectMachine(machine, id);
+    fileCache[filePath] = { ...introspectMachine(machine), id };
   };
 
   await filteredFiles.reduce(async (promise, filePath) => {

@@ -62,23 +62,9 @@ const makeSubStateFromNode = (
   };
 };
 
-const renderSubstate = (subState: SubState): string => {
-  return `{
-    targets: ${subState.targets};
-    sources: ${subState.sources};
-    states: {
-      ${Object.entries(subState.states)
-        .map(([key, state]) => {
-          return `${key}: ${renderSubstate(state)}`;
-        })
-        .join('\n')}
-    };
-  }`;
-};
-
 const xstateRegex = /^xstate\./;
 
-export const introspectMachine = (machine: XState.StateNode, id: string) => {
+export const introspectMachine = (machine: XState.StateNode) => {
   const actionMaps: { [name: string]: Set<string> } = {};
   const condMaps: { [name: string]: Set<string> } = {};
   const servicesMaps: { [name: string]: Set<string> } = {};
@@ -185,6 +171,7 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
       const sources = nodeMaps[node.id].sources;
       sources?.forEach((source) => {
         if (!actionMaps[action.type]) {
+          /* istanbul ignore next */
           actionMaps[action.type] = new Set();
         }
         actionMaps[action.type].add(source);
@@ -228,9 +215,8 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
 
   return {
-    id,
     stateMatches: getMatchesStates(machine),
-    subState: renderSubstate(subState),
+    subState,
     condLines,
     actionLines,
     services: serviceLines,
