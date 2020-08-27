@@ -171,6 +171,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       const sources = nodeMaps[node.id].sources;
       sources?.forEach((source) => {
         if (!actionMaps[action.type]) {
+          /* istanbul ignore next */
           actionMaps[action.type] = new Set();
         }
         actionMaps[action.type].add(source);

@@ -1,4 +1,4 @@
-import { Machine } from 'xstate';
+import { Machine, assign } from 'xstate';
 import { introspectMachine } from '../introspectMachine';
 
 describe('introspectMachine', () => {
@@ -95,6 +95,26 @@ describe('introspectMachine', () => {
                   () => {
                     console.log('Hey');
                   },
+                ],
+              },
+            },
+          },
+        },
+      });
+      expect(introspectMachine(machine).actionLines).toEqual([]);
+    });
+
+    it('Should not extract assign actions declared inline', () => {
+      const machine = Machine({
+        initial: 'red',
+        states: {
+          red: {
+            on: {
+              GO: {
+                actions: [
+                  assign({
+                    something: true,
+                  }),
                 ],
               },
             },
@@ -212,6 +232,11 @@ describe('introspectMachine', () => {
       expect(introspectMachine(machine).subState.states.red.sources).toEqual(
         "'GO_BACK'",
       );
+    });
+
+    it('Should return never for nodes if they have no valid targets', () => {
+      const machine = Machine({});
+      expect(introspectMachine(machine).subState.targets).toEqual('never');
     });
   });
 });

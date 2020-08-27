@@ -1,0 +1,22 @@
+name: Tests and Linting
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install
+        run: yarn install
+
+      - name: Typecheck
+        run: yarn x tsc
+
+      - uses: mattallty/jest-github-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          test-command: 'yarn test --coverage'
+          working-directory: 'packages/xstate-compiled'
