@@ -13,7 +13,5 @@
   },
   "include": [
     "src",
-    "examples",
-    "modules.d.ts"
   ]
 }
