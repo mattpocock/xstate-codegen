@@ -62,23 +62,9 @@ const makeSubStateFromNode = (
   };
 };
 
-const renderSubstate = (subState: SubState): string => {
-  return `{
-    targets: ${subState.targets};
-    sources: ${subState.sources};
-    states: {
-      ${Object.entries(subState.states)
-        .map(([key, state]) => {
-          return `${key}: ${renderSubstate(state)}`;
-        })
-        .join('\n')}
-    };
-  }`;
-};
-
 const xstateRegex = /^xstate\./;
 
-export const introspectMachine = (machine: XState.StateNode, id: string) => {
+export const introspectMachine = (machine: XState.StateNode) => {
   const actionMaps: { [name: string]: Set<string> } = {};
   const condMaps: { [name: string]: Set<string> } = {};
   const servicesMaps: { [name: string]: Set<string> } = {};
@@ -137,21 +123,20 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
         }
       }
 
-      if (
-        ((transition.target as unknown) as XState.StateNode[])?.[0].invoke
-          ?.length > 0
-      ) {
-        ((transition.target as unknown) as XState.StateNode[])?.[0].invoke?.forEach(
-          (service) => {
+      ((transition.target as unknown) as XState.StateNode[])?.forEach(
+        (targetNode) => {
+          /** Pick up invokes */
+          targetNode.invoke?.forEach((service) => {
             if (typeof service.src !== 'string' || /\./.test(service.src))
               return;
             if (!servicesMaps[service.src]) {
               servicesMaps[service.src] = new Set();
             }
             servicesMaps[service.src].add(transition.eventType);
-          },
-        );
-      }
+          });
+        },
+      );
+
       if (transition.actions) {
         transition.actions?.forEach((action) => {
           if (!xstateRegex.test(action.type)) {
@@ -185,6 +170,7 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
       const sources = nodeMaps[node.id].sources;
       sources?.forEach((source) => {
         if (!actionMaps[action.type]) {
+          /* istanbul ignore next */
           actionMaps[action.type] = new Set();
         }
         actionMaps[action.type].add(source);
@@ -228,9 +214,8 @@ export const introspectMachine = (machine: XState.StateNode, id: string) => {
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
 
   return {
-    id,
     stateMatches: getMatchesStates(machine),
-    subState: renderSubstate(subState),
+    subState,
     condLines,
     actionLines,
     services: serviceLines,

@@ -1,5 +1,6 @@
 import * as babelCore from '@babel/core';
 import { Scope } from '@babel/traverse';
+// @ts-ignore
 import splitExportDeclaration from '@babel/helper-split-export-declaration';
 import path from 'path';
 import babelPluginMacros, { createMacro } from 'babel-plugin-macros';

@@ -3,7 +3,7 @@ import fs from 'fs';
 import Handlebars from 'handlebars';
 import helpers from 'handlebars-helpers';
 import path from 'path';
-import { introspectMachine } from './introspectMachine';
+import { introspectMachine, SubState } from './introspectMachine';
 import pkgUp from 'pkg-up';
 
 const ensureFolderExists = (absoluteDir: string) => {
@@ -22,9 +22,22 @@ const ensureMultipleFoldersExist = (absoluteRoot: string, paths: string[]) => {
   });
 };
 
-export const printToFile = (
-  cache: Record<string, ReturnType<typeof introspectMachine>>,
-  outDir?: string,
+const renderSubstate = (subState: SubState): string => {
+  return `{
+    targets: ${subState.targets};
+    sources: ${subState.sources};
+    states: {
+      ${Object.entries(subState.states)
+        .map(([key, state]) => {
+          return `${key}: ${renderSubstate(state)}`;
+        })
+        .join('\n')}
+    };
+  }`;
+};
+
+export const getFileTexts = (
+  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
 ) => {
   const indexTemplateString = fs
     .readFileSync(path.resolve(__dirname, './templates/index.d.ts.hbs'))
@@ -55,9 +68,25 @@ export const printToFile = (
 
   const machines = Object.values(cache).map((machine) => ({
     id: machine.id,
-    machine,
+    machine: {
+      ...machine,
+      subState: renderSubstate(machine.subState),
+    },
   }));
 
+  return {
+    'index.d.ts': indexTemplate({ machines }),
+    'react.d.ts': reactTemplate({ machines }),
+    'index.js': indexJsTemplate,
+    'react.js': reactJsTemplate,
+    'package.json': packageJsonTemplate,
+  };
+};
+
+export const printToFile = (
+  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
+  outDir?: string,
+) => {
   const packageJson = pkgUp.sync();
 
   if (!packageJson) {
@@ -77,21 +106,19 @@ export const printToFile = (
     'node_modules/@xstate/compiled',
   );
 
+  const files = getFileTexts(cache);
+
   fs.writeFileSync(
     outDir
       ? path.resolve(process.cwd(), outDir, 'index.d.ts')
       : path.join(targetDir, 'index.d.ts'),
-    indexTemplate({
-      machines,
-    }),
+    files['index.d.ts'],
   );
   fs.writeFileSync(
     outDir
       ? path.resolve(process.cwd(), outDir, 'react.d.ts')
       : path.join(targetDir, 'react.d.ts'),
-    reactTemplate({
-      machines,
-    }),
+    files['react.d.ts'],
   );
 
   if (outDir) {
@@ -101,7 +128,7 @@ export const printToFile = (
     fs.writeFileSync(path.join(targetDir, 'index.d.ts'), `export default any;`);
   }
 
-  fs.writeFileSync(path.join(targetDir, 'index.js'), indexJsTemplate);
-  fs.writeFileSync(path.join(targetDir, 'react.js'), reactJsTemplate);
-  fs.writeFileSync(path.join(targetDir, 'package.json'), packageJsonTemplate);
+  fs.writeFileSync(path.join(targetDir, 'index.js'), files['index.js']);
+  fs.writeFileSync(path.join(targetDir, 'react.js'), files['react.js']);
+  fs.writeFileSync(path.join(targetDir, 'package.json'), files['package.json']);
 };
