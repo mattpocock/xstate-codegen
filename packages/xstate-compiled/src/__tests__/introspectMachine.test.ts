@@ -150,6 +150,42 @@ describe('introspectMachine', () => {
         },
       ]);
     });
+
+    it('Should calculate events which lead to a service, even if they are part of a parallel transition', () => {
+      const machine = Machine({
+        initial: 'red',
+        states: {
+          red: {
+            on: {
+              GO: [
+                {
+                  target: ['parallel.green', 'parallel.yellow'],
+                },
+              ],
+            },
+          },
+          parallel: {
+            type: 'parallel',
+            states: {
+              green: {},
+              yellow: {
+                invoke: {
+                  src: 'service',
+                },
+              },
+            },
+          },
+        },
+      });
+
+      expect(introspectMachine(machine).services).toEqual([
+        {
+          events: ['GO'],
+          name: 'service',
+        },
+      ]);
+    });
+
     it('Should not extract services declared inline', () => {
       const machine = Machine({
         initial: 'red',
