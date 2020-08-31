@@ -23,7 +23,7 @@ You must pass three type options to `createMachine/Machine`:
 For instance:
 
 ```ts
-import { Machine } from '@xtate/compiled';
+import { Machine } from '@xstate/compiled';
 
 interface Context {}
 
