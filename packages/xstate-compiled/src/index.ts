@@ -6,7 +6,7 @@ import path from 'path';
 import minimist from 'minimist';
 import { introspectMachine } from './introspectMachine';
 import { extractMachines } from './extractMachines';
-import { printToFile } from './printToFile';
+import { printToFile, printJsFiles } from './printToFile';
 
 const { _: arrayArgs, ...objectArgs } = minimist(process.argv.slice(2));
 
@@ -68,6 +68,7 @@ gaze(pattern, {}, async function(err, watcher) {
     if (!code.includes('@xstate/compiled')) {
       return;
     }
+    printJsFiles();
     const machines = await extractMachines(filePath);
     if (machines.length === 0) {
       return;

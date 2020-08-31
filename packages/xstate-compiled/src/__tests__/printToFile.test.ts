@@ -1,5 +1,5 @@
 import { Machine } from 'xstate';
-import { getFileTexts } from '../printToFile';
+import { getDeclarationFileTexts } from '../printToFile';
 import { introspectMachine } from '../introspectMachine';
 
 test('That printToFile matches a snapshot test', () => {
@@ -33,7 +33,7 @@ test('That printToFile matches a snapshot test', () => {
     },
   });
 
-  const files = getFileTexts({
+  const files = getDeclarationFileTexts({
     'index.js': { id: 'something', ...introspectMachine(machine) },
   });
 

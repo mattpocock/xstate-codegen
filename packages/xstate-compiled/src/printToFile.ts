@@ -36,7 +36,7 @@ const renderSubstate = (subState: SubState): string => {
   }`;
 };
 
-export const getFileTexts = (
+export const getDeclarationFileTexts = (
   cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
 ) => {
   const indexTemplateString = fs
@@ -45,18 +45,6 @@ export const getFileTexts = (
 
   const reactTemplateString = fs
     .readFileSync(path.resolve(__dirname, './templates/react.d.ts.hbs'))
-    .toString();
-
-  const indexJsTemplate = fs
-    .readFileSync(path.resolve(__dirname, './templates/index.js.hbs'))
-    .toString();
-
-  const reactJsTemplate = fs
-    .readFileSync(path.resolve(__dirname, './templates/react.js.hbs'))
-    .toString();
-
-  const packageJsonTemplate = fs
-    .readFileSync(path.resolve(__dirname, './templates/package.json.hbs'))
     .toString();
 
   helpers({
@@ -77,16 +65,10 @@ export const getFileTexts = (
   return {
     'index.d.ts': indexTemplate({ machines }),
     'react.d.ts': reactTemplate({ machines }),
-    'index.js': indexJsTemplate,
-    'react.js': reactJsTemplate,
-    'package.json': packageJsonTemplate,
   };
 };
 
-export const printToFile = (
-  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
-  outDir?: string,
-) => {
+export const getNodeModulesDir = () => {
   const packageJson = pkgUp.sync();
 
   if (!packageJson) {
@@ -106,7 +88,15 @@ export const printToFile = (
     'node_modules/@xstate/compiled',
   );
 
-  const files = getFileTexts(cache);
+  return targetDir;
+};
+
+export const printToFile = (
+  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
+  outDir?: string,
+) => {
+  const files = getDeclarationFileTexts(cache);
+  const targetDir = getNodeModulesDir();
 
   fs.writeFileSync(
     outDir
@@ -127,8 +117,28 @@ export const printToFile = (
     fs.writeFileSync(path.join(targetDir, 'react.d.ts'), `export default any;`);
     fs.writeFileSync(path.join(targetDir, 'index.d.ts'), `export default any;`);
   }
+};
 
-  fs.writeFileSync(path.join(targetDir, 'index.js'), files['index.js']);
-  fs.writeFileSync(path.join(targetDir, 'react.js'), files['react.js']);
-  fs.writeFileSync(path.join(targetDir, 'package.json'), files['package.json']);
+/**
+ * Prints the js files, which needs to be done in advance
+ * of rollup looking at the code to ensure there is a module for rollup
+ * to statically analyse
+ */
+export const printJsFiles = () => {
+  const targetDir = getNodeModulesDir();
+  const indexJsTemplate = fs
+    .readFileSync(path.resolve(__dirname, './templates/index.js.hbs'))
+    .toString();
+
+  const reactJsTemplate = fs
+    .readFileSync(path.resolve(__dirname, './templates/react.js.hbs'))
+    .toString();
+
+  const packageJsonTemplate = fs
+    .readFileSync(path.resolve(__dirname, './templates/package.json.hbs'))
+    .toString();
+
+  fs.writeFileSync(path.join(targetDir, 'index.js'), indexJsTemplate);
+  fs.writeFileSync(path.join(targetDir, 'react.js'), reactJsTemplate);
+  fs.writeFileSync(path.join(targetDir, 'package.json'), packageJsonTemplate);
 };
