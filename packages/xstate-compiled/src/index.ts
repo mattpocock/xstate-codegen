@@ -61,6 +61,7 @@ gaze(pattern, {}, async function(err, watcher) {
     process.exit(1);
   }
 
+  printJsFiles();
   console.clear();
 
   const addToCache = async (filePath: string) => {
@@ -68,7 +69,6 @@ gaze(pattern, {}, async function(err, watcher) {
     if (!code.includes('@xstate/compiled')) {
       return;
     }
-    printJsFiles();
     const machines = await extractMachines(filePath);
     if (machines.length === 0) {
       return;
