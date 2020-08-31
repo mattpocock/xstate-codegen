@@ -8,7 +8,9 @@
     "xstate-codegen": "0.0.4"
   },
   "changesets": [
+    "big-snakes-share",
     "brown-clocks-give",
+    "four-tips-count",
     "giant-chefs-hammer",
     "old-kids-refuse",
     "quick-foxes-eat",

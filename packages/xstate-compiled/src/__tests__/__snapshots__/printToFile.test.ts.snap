@@ -489,8 +489,7 @@ activityTest: {
      */
     order?: number;
   }
-
-  
+  export { mapState, actions, assign, send, sendParent, sendUpdate, forwardTo, matchState, spawn, doneInvoke } from 'xstate';
 }"
 `;
 

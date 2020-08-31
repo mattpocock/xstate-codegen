@@ -1,5 +1,12 @@
 # xstate-codegen
 
+## 0.1.0-next.3
+
+### Patch Changes
+
+- c87691e: Fix typo in readme
+- f802dc0: Re-exported other exports from xstate, such as actions, assign, send, sendParent etc. This means you can `import { assign, send, createMachine } from '@xstate/compiled'` without any issues.
+
 ## 0.1.0-next.2
 
 ### Patch Changes
