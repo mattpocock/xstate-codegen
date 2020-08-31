@@ -9,7 +9,7 @@
 Instead of importing `createMachine` or `Machine` from `xstate`, import them from `@xstate/compiled`:
 
 ```ts
-import { createMachine } from '@xtate/compiled';
+import { createMachine } from '@xstate/compiled';
 
 const machine = createMachine();
 ```
@@ -23,7 +23,7 @@ You must pass three type options to `createMachine/Machine`:
 For instance:
 
 ```ts
-import { Machine } from '@xtate/compiled';
+import { Machine } from '@xstate/compiled';
 
 interface Context {}
 
