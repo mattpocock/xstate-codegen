@@ -6,7 +6,7 @@ import path from 'path';
 import minimist from 'minimist';
 import { introspectMachine } from './introspectMachine';
 import { extractMachines } from './extractMachines';
-import { printToFile } from './printToFile';
+import { printToFile, printJsFiles } from './printToFile';
 
 const { _: arrayArgs, ...objectArgs } = minimist(process.argv.slice(2));
 
@@ -61,6 +61,7 @@ gaze(pattern, {}, async function(err, watcher) {
     process.exit(1);
   }
 
+  printJsFiles();
   console.clear();
 
   const addToCache = async (filePath: string) => {
