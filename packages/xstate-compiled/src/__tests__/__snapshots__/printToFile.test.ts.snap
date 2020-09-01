@@ -213,9 +213,9 @@ activityTest: {
   export type StateWithMatches<
     TContext,
     TEvent extends EventObject,
-    TMatches
+    Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   > = Omit<State<TContext, TEvent>, 'matches'> & {
-    matches: (matches: TMatches) => boolean;
+    matches: (matches: RegisteredMachinesMap<TContext, TEvent>[Id]['_matches']) => boolean;
   };
 
   export function interpret<
@@ -519,7 +519,7 @@ declare module '@xstate/compiled/react' {
     StateWithMatches<
       TContext,
       TEvent,
-      Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>['_matches']
+      Id
     >,
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
@@ -536,7 +536,7 @@ declare module '@xstate/compiled/react' {
     StateWithMatches<
       TContext,
       TEvent,
-      Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>['_matches']
+      Id
     >,
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>,

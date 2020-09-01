@@ -23,7 +23,7 @@ declare module '@xstate/compiled/react' {
     StateWithMatches<
       TContext,
       TEvent,
-      Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>['_matches']
+      Id
     >,
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
@@ -40,7 +40,7 @@ declare module '@xstate/compiled/react' {
     StateWithMatches<
       TContext,
       TEvent,
-      Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>['_matches']
+      Id
     >,
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
     InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
