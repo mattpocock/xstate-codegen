@@ -1,5 +1,11 @@
 # xstate-codegen
 
+## 0.1.0-next.7
+
+### Patch Changes
+
+- c5238ad: Readme tweak
+
 ## 0.1.0-next.6
 
 ### Patch Changes
