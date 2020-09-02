@@ -1,5 +1,11 @@
 # xstate-codegen
 
+## 0.1.0-next.6
+
+### Patch Changes
+
+- bf4a125: Fixed bug with build process that resulted in the previous version not being shipped correctly
+
 ## 0.1.0-next.5
 
 ### Patch Changes
