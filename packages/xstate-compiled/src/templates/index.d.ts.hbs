@@ -240,12 +240,7 @@ declare module '@xstate/compiled' {
     state: StateWithMatches<
       TContext,
       TEvent,
-      Extract<
-        RegisteredMachine<TContext, TEvent>,
-        {
-          id: Id;
-        }
-      >['_matches']
+      Id
     >;
   };
 

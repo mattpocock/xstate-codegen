@@ -1,5 +1,18 @@
 # xstate-codegen
 
+## 0.1.0-next.5
+
+### Patch Changes
+
+- Fixed a bug with InterpreterWithMatches caused by an early release of StateWithMatches work
+- 9dfbc38: Refactored StateWithMatches to take an Id parameter, instead of a \_matches param. This makes it easier to make generic.
+
+## 0.1.0-next.4
+
+### Patch Changes
+
+- b9378fc: Fixed a bug where, when run for the first time, the codegen tool would fail because rollup would see no .js files in the @xstate/compiled node_module directory
+
 ## 0.1.0-next.3
 
 ### Patch Changes
