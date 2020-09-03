@@ -131,7 +131,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.activities}}
       activities: {
         {{#each this.machine.activities}}    
-        {{this}}: ActivityConfig<TContext, TEvent>;
+        {{this.name}}: ActivityConfig<TContext, TEvent>;
         {{/each}}
       };
       {{/if}}

@@ -46,14 +46,17 @@ describe('introspectMachine', () => {
       expect(introspectMachine(machine).actionLines).toEqual([
         {
           name: 'action2',
+          required: true,
           events: ['GO'],
         },
         {
           name: 'action3',
+          required: true,
           events: [],
         },
         {
           name: 'action1',
+          required: true,
           events: [],
         },
       ]);
@@ -80,6 +83,7 @@ describe('introspectMachine', () => {
         {
           name: 'action1',
           events: ['GO'],
+          required: true,
         },
       ]);
     });
@@ -147,6 +151,7 @@ describe('introspectMachine', () => {
         {
           events: ['GO'],
           name: 'service',
+          required: true,
         },
       ]);
     });
@@ -182,6 +187,7 @@ describe('introspectMachine', () => {
         {
           events: ['GO'],
           name: 'service',
+          required: true,
         },
       ]);
     });
@@ -273,6 +279,72 @@ describe('introspectMachine', () => {
     it('Should return never for nodes if they have no valid targets', () => {
       const machine = Machine({});
       expect(introspectMachine(machine).subState.targets).toEqual('never');
+    });
+  });
+
+  describe('Required attributes', () => {
+    it('Should not require services, actions, activities and guards passed in the second option', () => {
+      const machine = Machine(
+        {
+          initial: 'red',
+          states: {
+            red: {
+              entry: 'action',
+              invoke: {
+                src: 'service',
+                onDone: {
+                  cond: 'condition',
+                  target: 'green',
+                },
+              },
+            },
+            green: {
+              activities: ['activity'],
+            },
+          },
+        },
+        {
+          services: {
+            service: () => Promise.resolve(),
+          },
+          guards: {
+            condition: () => false,
+          },
+          actions: {
+            action: () => {},
+          },
+          activities: {
+            activity: () => {},
+          },
+        },
+      );
+      expect(introspectMachine(machine).services).toEqual([
+        {
+          events: [],
+          name: 'service',
+          required: false,
+        },
+      ]);
+      expect(introspectMachine(machine).actionLines).toEqual([
+        {
+          events: [],
+          name: 'action',
+          required: false,
+        },
+      ]);
+      expect(introspectMachine(machine).condLines).toEqual([
+        {
+          events: ['done.invoke.service'],
+          name: 'condition',
+          required: false,
+        },
+      ]);
+      expect(introspectMachine(machine).activities).toEqual([
+        {
+          name: 'activity',
+          required: false,
+        },
+      ]);
     });
   });
 });
