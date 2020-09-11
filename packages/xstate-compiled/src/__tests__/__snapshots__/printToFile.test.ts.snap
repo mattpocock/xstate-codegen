@@ -76,7 +76,7 @@ declare module '@xstate/compiled' {
       devTools?: boolean;
     };
     _subState: {
-    targets: '.invokeTest' | '.testEvent' | '.activityTest' | '#superMachine.invokeTest' | '#superMachine.testEvent' | '#superMachine.activityTest';
+    targets: '.invokeTest' | 'invokeTest' | '.testEvent' | 'testEvent' | '.activityTest' | 'activityTest' | '#superMachine.invokeTest' | '#superMachine.testEvent' | '#superMachine.activityTest';
     sources: never;
     states: {
       invokeTest: {

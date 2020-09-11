@@ -28,7 +28,12 @@ describe('getTransitionsFromNode', () => {
       },
     });
 
-    expect(getTransitionsFromNode(machine)).toEqual(['.red', '.green']);
+    expect(getTransitionsFromNode(machine)).toEqual([
+      '.red',
+      'red',
+      '.green',
+      'green',
+    ]);
   });
 
   it('Should fetch children of internal transitions', () => {
@@ -47,9 +52,13 @@ describe('getTransitionsFromNode', () => {
 
     expect(getTransitionsFromNode(machine)).toEqual([
       '.red',
+      'red',
       '.red.a',
+      'red.a',
       '.red.b',
+      'red.b',
       '.green',
+      'green',
     ]);
   });
 
@@ -217,7 +226,9 @@ describe('getTransitionsFromNode', () => {
       'nested2.e',
       'nested2.f',
       '.c',
+      'c',
       '.d',
+      'd',
     ]);
   });
 });

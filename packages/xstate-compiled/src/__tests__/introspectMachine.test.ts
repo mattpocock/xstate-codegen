@@ -224,7 +224,8 @@ describe('introspectMachine', () => {
 
       expect(introspectMachine(machine).subState).toEqual({
         sources: 'never',
-        targets: "'.red' | '.green' | '.green.gold'",
+        targets:
+          "'.red' | 'red' | '.green' | 'green' | '.green.gold' | 'green.gold'",
         states: {
           green: {
             sources: 'never',
@@ -235,7 +236,7 @@ describe('introspectMachine', () => {
                 states: {},
               },
             },
-            targets: "'red' | 'green' | 'green.gold' | '.gold'",
+            targets: "'red' | 'green' | 'green.gold' | '.gold' | 'gold'",
           },
           red: {
             sources: 'never',
