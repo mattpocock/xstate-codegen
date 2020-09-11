@@ -57,6 +57,49 @@ declare module '@xstate/compiled' {
             | { type: 'CONDITION_TEST' }
             >
           ) => boolean;
+        notRequiredCondition?: (
+          context: TContext,
+          event:
+            Extract<TEvent,
+            | { type: 'CONDITION_TEST' }
+            >
+          ) => boolean;
+      };
+      actions: {
+        action:
+          | ActionObject<
+              TContext,
+              Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              > extends undefined ? TEvent : Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              >
+            >
+          | ActionFunction<
+              TContext,
+              Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              > extends undefined ? TEvent : Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              >
+            >;
+        notRequiredAction?:
+          | ActionObject<
+              TContext,
+              Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              > extends undefined ? TEvent : Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              >
+            >
+          | ActionFunction<
+              TContext,
+              Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              > extends undefined ? TEvent : Extract<TEvent,
+              | { type: 'done.state.superMachine.invokeTest' }
+              >
+            >;
       };
       services: {
         someInvoke: InvokeCreator<
@@ -69,9 +112,20 @@ declare module '@xstate/compiled' {
             TEvent,
             { type: 'done.invoke.someInvoke'}> extends { 'data': infer T } ? T : any
           > | StateMachine<any, any, any>
+        notRequiredInvoke?: InvokeCreator<
+          TContext, 
+          Extract<TEvent,
+          | { type: 'CONDITION_TEST' }
+          >
+,
+          Extract<
+            TEvent,
+            { type: 'done.invoke.notRequiredInvoke'}> extends { 'data': infer T } ? T : any
+          > | StateMachine<any, any, any>
       };
       activities: {
         someActivity: ActivityConfig<TContext, TEvent>;
+        notRequiredActivity?: ActivityConfig<TContext, TEvent>;
       };
       devTools?: boolean;
     };

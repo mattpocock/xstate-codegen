@@ -54,7 +54,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.condLines}}
       guards: {
         {{#each this.machine.condLines}}
-        {{this.name}}: (
+        {{this.name}}{{#unless this.required}}?{{/unless}}: (
           context: TContext,
             {{#if this.events}}
           event:
@@ -71,7 +71,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.actionLines}}
       actions: {
         {{#each this.machine.actionLines}}
-        {{this.name}}:
+        {{this.name}}{{#unless this.required}}?{{/unless}}:
           | ActionObject<
               TContext,
               {{#if this.events}}
@@ -110,7 +110,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.services}}
       services: {
         {{#each this.machine.services}}
-        {{this.name}}: InvokeCreator<
+        {{this.name}}{{#unless this.required}}?{{/unless}}: InvokeCreator<
           TContext, 
           {{#if this.events}}
           Extract<TEvent,
@@ -131,7 +131,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.activities}}
       activities: {
         {{#each this.machine.activities}}    
-        {{this.name}}: ActivityConfig<TContext, TEvent>;
+        {{this.name}}{{#unless this.required}}?{{/unless}}: ActivityConfig<TContext, TEvent>;
         {{/each}}
       };
       {{/if}}
