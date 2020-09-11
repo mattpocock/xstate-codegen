@@ -1,6 +1,6 @@
 {
   "name": "xstate-codegen",
-  "version": "0.1.0-next.8",
+  "version": "0.1.0",
   "bin": "bin/index.js",
   "author": "Matt Pocock",
   "license": "MIT",
