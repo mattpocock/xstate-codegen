@@ -248,7 +248,7 @@ export const extractMachines = async (
 
   const build = await rollup({
     input: resolvedFilePath,
-    external: (id) => !id.startsWith('.'),
+    external: (id) => !/^(\.|\/|\w:)/.test(id),
     plugins: [
       nodeResolvePlugin({
         extensions,
