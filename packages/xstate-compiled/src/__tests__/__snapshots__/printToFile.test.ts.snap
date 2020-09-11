@@ -35,6 +35,8 @@ import { StateNode } from 'xstate/lib/StateNode';
 
 
 declare module '@xstate/compiled' {
+  type TwoLevelPartial<T extends object> = { [K in keyof T]?: Partial<T[K]>};
+
   /** Generated Types */
   export class SomethingStateMachine<
     TContext,
@@ -290,10 +292,12 @@ activityTest: {
       TEvent,
       RegisteredMachinesMap<TContext, TEvent>[Id]['_subState']
     >,
-    options?: Extract<
-      RegisteredMachine<TContext, TEvent>,
-      { id: Id }
-    >['_options'],
+    options?: TwoLevelPartial<
+      Extract<
+        RegisteredMachine<TContext, TEvent>,
+        { id: Id }
+      >['_options']
+    >,
   ): RegisteredMachinesMap<TContext, TEvent>[Id];
 
   export function createMachine<
@@ -306,10 +310,12 @@ activityTest: {
       TEvent,
       RegisteredMachinesMap<TContext, TEvent>[Id]['_subState']
     >,
-    options?: Extract<
-      RegisteredMachine<TContext, TEvent>,
-      { id: Id }
-    >['_options'],
+    options?: TwoLevelPartial<
+      Extract<
+        RegisteredMachine<TContext, TEvent>,
+        { id: Id }
+      >['_options']
+    >,
   ): RegisteredMachinesMap<TContext, TEvent>[Id];
 
   export interface MachineConfig<
