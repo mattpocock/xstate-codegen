@@ -104,16 +104,21 @@ gaze(pattern, {}, async function(err, watcher) {
 
   // @ts-ignore
   this.on('changed', async (filePath) => {
-    console.clear();
     console.log(`File Changed: `.cyan.bold + toRelative(filePath).gray);
     await addToCache(filePath);
     printToFile(fileCache, objectArgs.outDir);
   });
   // @ts-ignore
   this.on('added', async (filePath) => {
-    console.clear();
     console.log(`File Added: `.green.bold + toRelative(filePath).gray);
     await addToCache(filePath);
+    printToFile(fileCache, objectArgs.outDir);
+  });
+
+  // @ts-ignore
+  this.on('deleted', async (filePath) => {
+    console.log(`File Deleted: `.red.bold + toRelative(filePath).gray);
+    delete fileCache[filePath];
     printToFile(fileCache, objectArgs.outDir);
   });
 
