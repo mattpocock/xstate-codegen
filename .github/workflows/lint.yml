@@ -12,7 +12,7 @@ jobs:
         run: yarn install
 
       - name: Typecheck
-        run: yarn x tsc
+        run: yarn x build
 
       - name: Test
         run: yarn x test
