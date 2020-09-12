@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "types": [
-      "node",
-      "jest"
-    ],
+    "types": ["node"],
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -13,8 +10,5 @@
     "resolveJsonModule": true,
     "strictNullChecks": true,
     "outDir": "bin"
-  },
-  "include": [
-    "src",
-  ]
+  }
 }

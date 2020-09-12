@@ -15,4 +15,4 @@ jobs:
         run: yarn x tsc
 
       - name: Test
-        run: yarn x test --coverage
+        run: yarn x test
