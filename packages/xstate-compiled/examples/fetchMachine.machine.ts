@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'fetchMachine'>({
+const machine = Machine<Context, Event, 'wowMachine'>({
   initial: 'idle',
   states: {
     idle: {
@@ -22,10 +22,12 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
       },
     },
     pending: {
-      invoke: {
-        src: 'makeFetch',
-        onDone: 'success',
-      },
+      invoke: [
+        {
+          src: 'makeFetch',
+          onDone: 'success',
+        },
+      ],
     },
     success: {
       entry: ['celebrate'],
