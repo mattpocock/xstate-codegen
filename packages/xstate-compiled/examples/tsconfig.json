@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -9,6 +11,6 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "strictNullChecks": true,
-    "outDir": "bin"
+    "noEmit": true
   }
 }

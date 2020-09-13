@@ -1,5 +1,11 @@
 # xstate-codegen
 
+## 0.1.3
+
+### Patch Changes
+
+- Fixed a bug where we published far too many files to npm
+
 ## 0.1.2
 
 ### Patch Changes
