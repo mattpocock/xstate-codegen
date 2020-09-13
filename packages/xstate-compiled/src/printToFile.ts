@@ -5,6 +5,7 @@ import helpers from 'handlebars-helpers';
 import path from 'path';
 import { introspectMachine, SubState } from './introspectMachine';
 import pkgUp from 'pkg-up';
+import rimraf from 'rimraf';
 
 const ensureFolderExists = (absoluteDir: string) => {
   if (fs.existsSync(absoluteDir)) {
@@ -77,16 +78,7 @@ export const getNodeModulesDir = () => {
     );
   }
 
-  ensureMultipleFoldersExist(path.dirname(packageJson), [
-    'node_modules',
-    '@xstate',
-    'compiled',
-  ]);
-
-  const targetDir = path.resolve(
-    path.dirname(packageJson),
-    'node_modules/@xstate/compiled',
-  );
+  const targetDir = path.resolve(path.dirname(packageJson), 'node_modules');
 
   return targetDir;
 };
@@ -96,7 +88,14 @@ export const printToFile = (
   outDir?: string,
 ) => {
   const files = getDeclarationFileTexts(cache);
-  const targetDir = getNodeModulesDir();
+  const nodeModulesDir = getNodeModulesDir();
+  const targetDir = path.resolve(nodeModulesDir, '@xstate/compiled');
+
+  /** Delete @xstate/compiled directory so that it triggers VSCode to re-check it */
+  rimraf.sync(path.join(targetDir, '*.d.ts'));
+
+  printJsFiles();
+  ensureMultipleFoldersExist(nodeModulesDir, ['@xstate', 'compiled']);
 
   fs.writeFileSync(
     outDir
@@ -125,7 +124,11 @@ export const printToFile = (
  * to statically analyse
  */
 export const printJsFiles = () => {
-  const targetDir = getNodeModulesDir();
+  const nodeModulesDir = getNodeModulesDir();
+  const targetDir = path.resolve(nodeModulesDir, '@xstate/compiled');
+
+  ensureMultipleFoldersExist(nodeModulesDir, ['@xstate', 'compiled']);
+
   const indexJsTemplate = fs
     .readFileSync(path.resolve(__dirname, './templates/index.js.hbs'))
     .toString();
