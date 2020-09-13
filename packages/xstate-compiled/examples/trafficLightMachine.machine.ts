@@ -54,9 +54,8 @@ const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
           },
         },
         stop: {
-          on: {
-            // Transient transition
-            '': { target: 'walk' },
+          always: {
+            target: 'walk',
           },
         },
       },

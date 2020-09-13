@@ -4,6 +4,7 @@ import {
 import {
   StateWithMatches,
   InterpreterWithMatches,
+  RegisteredMachinesMap,
   RegisteredMachine,
 } from '@xstate/compiled';
 
@@ -12,7 +13,7 @@ declare module '@xstate/compiled/react' {
     TContext,
     TSchema,
     TEvent extends EventObject,
-    Id extends string
+    Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   >(
     machine: Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>,
     options: Extract<
@@ -33,7 +34,7 @@ declare module '@xstate/compiled/react' {
     TContext,
     TSchema,
     TEvent extends EventObject,
-    Id extends string
+    Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   >(
     service: InterpreterWithMatches<TContext, TSchema, TEvent, Id>
   ): [
