@@ -36,6 +36,7 @@ export const getTransitionsFromNode = (node: StateNode): string[] => {
       }
 
       transitions.add(`.${relativeKey}`);
+      transitions.add(`${relativeKey}`);
     });
   });
 
