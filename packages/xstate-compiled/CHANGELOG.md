@@ -1,5 +1,11 @@
 # xstate-codegen
 
+## 0.1.1
+
+### Patch Changes
+
+- 8c0e12a: Improved type checking speed in VSCode by rimraffing the .d.ts files before regenerating them
+
 ## 0.1.0
 
 ### Minor Changes
