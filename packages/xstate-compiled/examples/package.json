@@ -1,0 +1,16 @@
+{
+  "name": "xstate-codegen-examples",
+  "version": "0.1.0",
+  "author": "Matt Pocock",
+  "license": "MIT",
+  "repository": "https://github.com/mattpocock/xstate-codegen",
+  "dependencies": {
+    "xstate": "^4.12.0",
+    "@xstate/react": "0.8.1",
+    "react": "16.13.1",
+    "typescript": "3.9.7"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}
