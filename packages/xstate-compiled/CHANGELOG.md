@@ -1,5 +1,26 @@
 # xstate-codegen
 
+## 0.1.2
+
+### Patch Changes
+
+- af655bf: Added typing of options passed in to the second argument of Machine/createMachine. These options will be optional in the Machine, and any declared in the Machine will be optional when the machine is interpreted.
+- 1cd0df9: Fixed a bug where transitions from this root node:
+
+  ```
+  const machine = Machine({
+    initial: 'red',
+    states: {
+      red: {},
+      green: {},
+    },
+  });
+  ```
+
+  Would include `.red` and `.green`, but not `red` and `green`,
+
+- 64e946f: Added a listener for when files are deleted
+
 ## 0.1.1
 
 ### Patch Changes
