@@ -21,6 +21,8 @@ import {
   send,
   Expr,
   Typestate,
+  StateNodeConfig as ImportedStateNodeConfig,
+  StateNode,
 } from 'xstate';
 import {
   StateWithMatches,
@@ -29,7 +31,6 @@ import {
 } from '@xstate/compiled';
 import { Interpreter } from 'xstate/lib/interpreter';
 import { State } from 'xstate/lib/State';
-import { StateNode } from 'xstate/lib/StateNode';
 
 
 declare module '@xstate/compiled' {
@@ -61,11 +62,11 @@ declare module '@xstate/compiled' {
         {{this.name}}{{#unless this.required}}?{{/unless}}: (
           context: Extract<TTypestate, { value:
             {{#each this.states}} | {{{this}}} {{/each}} 
-          }> extends undefined
+          }>['context'] extends undefined
             ? TContext
             : Extract<TTypestate, { value:
               {{#each this.states}} | {{{this}}} {{/each}} 
-            }>,
+            }>['context'],
             {{#if this.events}}
           event:
             Extract<TEvent,
@@ -85,11 +86,11 @@ declare module '@xstate/compiled' {
           | ActionObject<
               Extract<TTypestate, { value:
                 {{#each this.states}} | {{{this}}} {{/each}} 
-              }> extends undefined
+              }>['context'] extends undefined
                 ? TContext
                 : Extract<TTypestate, { value:
                   {{#each this.states}} | {{{this}}} {{/each}} 
-                }>,
+                }>['context'],
               {{#if this.events}}
               Extract<TEvent,
               {{#each this.events}}
@@ -107,11 +108,11 @@ declare module '@xstate/compiled' {
           | ActionFunction<
               Extract<TTypestate, { value:
                 {{#each this.states}} | {{{this}}} {{/each}} 
-              }> extends undefined
+              }>['context'] extends undefined
                 ? TContext
                 : Extract<TTypestate, { value:
                   {{#each this.states}} | {{{this}}} {{/each}} 
-                }>,
+                }>['context'],
               {{#if this.events}}
               Extract<TEvent,
               {{#each this.events}}
@@ -135,11 +136,11 @@ declare module '@xstate/compiled' {
         {{this.name}}{{#unless this.required}}?{{/unless}}: InvokeCreator<
           Extract<TTypestate, { value:
             {{#each this.states}} | {{{this}}} {{/each}} 
-          }> extends undefined
+          }>['context'] extends undefined
             ? TContext
             : Extract<TTypestate, { value:
               {{#each this.states}} | {{{this}}} {{/each}} 
-            }>,
+            }>['context'],
           {{#if this.events}}
           Extract<TEvent,
           {{#each this.events}}
@@ -266,22 +267,34 @@ declare module '@xstate/compiled' {
     TContext,
     TSchema,
     TEvent extends EventObject,
+    TTypestate extends Typestate<TContext>,
     Id extends keyof RegisteredMachinesMap<TContext, TEvent>
-  > = Omit<Interpreter<TContext, TSchema, TEvent>, 'state'> & {
+  > = Omit<Interpreter<TContext, TSchema, TEvent, TTypestate>, 'state'> & {
     state: StateWithMatches<
       TContext,
       TEvent,
+      TTypestate,
       Id
     >;
   };
 
-  export type StateWithMatches<
+  export class StateWithMatches<
     TContext,
     TEvent extends EventObject,
-    Id extends keyof RegisteredMachinesMap<TContext, TEvent>
-  > = Omit<State<TContext, TEvent>, 'matches'> & {
-    matches: (matches: RegisteredMachinesMap<TContext, TEvent>[Id]['_matches']) => boolean;
-  };
+    TTypestate extends Typestate<TContext>,
+    Id extends keyof RegisteredMachinesMap<TContext, TEvent, TTypestate>
+  > extends State<TContext, TEvent, TTypestate> {
+    // @ts-ignore
+    matches<TSV extends TTypestate['value']>(
+      parentStateValue: TSV
+    ): this is State<
+      (TTypestate extends { value: TSV } ? TTypestate : never)['context'],
+      TEvent,
+      TTypestate
+    > & { 
+      value: TSV
+    }
+  }
 
   export function interpret<
     TContext,
@@ -295,7 +308,7 @@ declare module '@xstate/compiled' {
       RegisteredMachine<TContext, TEvent, TTypestate>,
       { id: Id }
     >['_options'],
-  ): InterpreterWithMatches<TContext, TSchema, TEvent, Id>;
+  ): InterpreterWithMatches<TContext, TSchema, TEvent, TTypestate, Id>;
 
   export function Machine<
     TContext,
@@ -441,42 +454,32 @@ declare module '@xstate/compiled' {
     TContext,
     TEvent extends EventObject,
     TSubState extends SubState
+  > extends Omit<
+    ImportedStateNodeConfig<TContext, any, TEvent>,
+      | 'initial'
+      | 'context'
+      | 'states'
+      | 'invoke'
+      | 'on'
+      | 'onEntry'
+      | 'entry'
+      | 'onExit'
+      | 'exit'
+      | 'onDone'
+      | 'after'
+      | 'always'
+      | 'activities'
   > {
-    /**
-     * The relative key of the state node, which represents its location in the overall state value.
-     * This is automatically determined by the configuration shape via the key where it was defined.
-     */
-    key?: string;
     /**
      * The initial state node key.
      */
     initial?: keyof TSubState['states'];
-    /**
-     * @deprecated
-     */
-    parallel?: boolean | undefined;
-    /**
-     * The type of this state node:
-     *
-     *  - `'atomic'` - no child state nodes
-     *  - `'compound'` - nested child state nodes (XOR)
-     *  - `'parallel'` - orthogonal nested child state nodes (AND)
-     *  - `'history'` - history state node
-     *  - `'final'` - final state node
-     */
-    type?: 'atomic' | 'compound' | 'parallel' | 'final' | 'history';
     /**
      * The initial context (extended state) of the machine.
      *
      * Can be an object or a function that returns an object.
      */
     context?: TContext | (() => TContext);
-    /**
-     * Indicates whether the state node is a history state node, and what
-     * type of history:
-     * shallow, deep, true (shallow), false (none), undefined (none)
-     */
-    history?: 'shallow' | 'deep' | boolean | undefined;
     /**
      * The mapping of state node keys to their state node configurations (recursive).
      */
@@ -554,37 +557,6 @@ declare module '@xstate/compiled' {
     activities?: SingleOrArray<
       Activity<TContext, Extract<TEvent, { type: TSubState['sources'] }>>
     >;
-    /**
-     * @private
-     */
-    parent?: StateNode<TContext, any, TEvent>;
-    strict?: boolean | undefined;
-    /**
-     * The meta data associated with this state node, which will be returned in State instances.
-     */
-    meta?: any;
-    /**
-     * The data sent with the "done.state._id_" event if this is a final state node.
-     *
-     * The data will be evaluated with the current `context` and placed on the `.data` property
-     * of the event.
-     */
-    data?:
-      | Mapper<TContext, TEvent, any>
-      | PropertyMapper<TContext, TEvent, any>;
-    /**
-     * The unique ID of the state node, which can be referenced as a transition target via the
-     * `#id` syntax.
-     */
-    id?: string | undefined;
-    /**
-     * The string delimiter for serializing the path to a string. The default is "."
-     */
-    delimiter?: string;
-    /**
-     * The order this state node appears. Corresponds to the implicit SCXML document order.
-     */
-    order?: number;
   }
 
   // @ts-ignore

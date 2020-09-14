@@ -26,10 +26,11 @@ declare module '@xstate/compiled/react' {
     StateWithMatches<
       TContext,
       TEvent,
+      TTypestate,
       Id
     >,
-    InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
-    InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
+    InterpreterWithMatches<TContext, TSchema, TEvent, TTypestate, Id>['send'],
+    InterpreterWithMatches<TContext, TSchema, TEvent, TTypestate, Id>,
   ];
 
   export function useService<
@@ -39,14 +40,15 @@ declare module '@xstate/compiled/react' {
     TTypestate extends Typestate<TContext>,
     Id extends keyof RegisteredMachinesMap<TContext, TEvent, TTypestate>
   >(
-    service: InterpreterWithMatches<TContext, TSchema, TEvent, Id>
+    service: InterpreterWithMatches<TContext, TSchema, TEvent, TTypestate, Id>
   ): [
     StateWithMatches<
       TContext,
       TEvent,
+      TTypestate,
       Id
     >,
-    InterpreterWithMatches<TContext, TSchema, TEvent, Id>['send'],
-    InterpreterWithMatches<TContext, TSchema, TEvent, Id>,
+    InterpreterWithMatches<TContext, TSchema, TEvent, TTypestate, Id>['send'],
+    InterpreterWithMatches<TContext, TSchema, TEvent, TTypestate, Id>,
   ];
 }

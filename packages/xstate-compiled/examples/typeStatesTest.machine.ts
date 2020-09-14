@@ -17,25 +17,68 @@ const machine = createMachine<Context, Event, State, 'typeStatesTest'>({
   states: {
     red: {
       entry: ['redAction'],
+      invoke: {
+        src: 'redService',
+        onDone: {
+          cond: 'redCond',
+        },
+      },
     },
     green: {
       entry: ['greenAction'],
+      invoke: {
+        src: 'greenService',
+        onDone: {
+          cond: 'greenCond',
+        },
+      },
     },
   },
 });
 
-interpret(machine, {
+const service = interpret(machine, {
   actions: {
     greenAction: (context) => {
       // @ts-expect-error
       context === 'red-context';
+      context === 'green-context';
     },
     redAction: (context) => {
       // @ts-expect-error
       context === 'green-context';
+      context === 'red-context';
     },
   },
-});
+  guards: {
+    greenCond: (context) => {
+      // @ts-expect-error
+      context === 'red-context';
+      return context === 'green-context';
+    },
+    redCond: (context) => {
+      // @ts-expect-error
+      context === 'green-context';
+      return context === 'red-context';
+    },
+  },
+  services: {
+    greenService: async (context) => {
+      // @ts-expect-error
+      context === 'red-context';
+      context === 'green-context';
+    },
+    redService: async (context) => {
+      // @ts-expect-error
+      context === 'green-context';
+      context === 'red-context';
+    },
+  },
+}).start();
+
+if (service.state.matches('green')) {
+  // @ts-expect-error
+  service.state.context === 'red-context';
+}
 
 const useThisMachine = () => {
   const [state, dispatch] = useMachine(machine, {
@@ -43,11 +86,43 @@ const useThisMachine = () => {
       greenAction: (context) => {
         // @ts-expect-error
         context === 'red-context';
+        context === 'green-context';
       },
       redAction: (context) => {
         // @ts-expect-error
         context === 'green-context';
+        context === 'red-context';
+      },
+    },
+    guards: {
+      greenCond: (context) => {
+        // @ts-expect-error
+        context === 'red-context';
+        return context === 'green-context';
+      },
+      redCond: (context) => {
+        // @ts-expect-error
+        context === 'green-context';
+        return context === 'red-context';
+      },
+    },
+    services: {
+      greenService: async (context) => {
+        // @ts-expect-error
+        context === 'red-context';
+        context === 'green-context';
+      },
+      redService: async (context) => {
+        // @ts-expect-error
+        context === 'green-context';
+        context === 'red-context';
       },
     },
   });
+
+  if (state.matches('green')) {
+    // @ts-expect-error
+    state.context === 'red-context';
+    state.value === 'green';
+  }
 };
