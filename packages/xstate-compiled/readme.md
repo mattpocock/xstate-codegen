@@ -1,3 +1,17 @@
+## Type Safe State Machines
+
+`xstate-codegen` gives you 100% type-safe usage of XState in Typescript. You get type safety on:
+
+- Transition targets: `on: {EVENT: 'deep.nested.state'}`
+- Services
+- Guards
+- Activities
+- Actions
+- The `initial` attribute
+- `state.matches('deep.nested.state')`
+
+This works by introspecting your machine in situ in your code. With this Thanos-level power, we can click our fingers and give you 100% type safety in your state machines.
+
 ## Usage
 
 ### CLI
@@ -9,7 +23,7 @@
 Instead of importing `createMachine` or `Machine` from `xstate`, import them from `@xstate/compiled`:
 
 ```ts
-import { createMachine } from '@xtate/compiled';
+import { createMachine } from '@xstate/compiled';
 
 const machine = createMachine();
 ```
@@ -23,7 +37,7 @@ You must pass three type options to `createMachine/Machine`:
 For instance:
 
 ```ts
-import { Machine } from '@xtate/compiled';
+import { Machine } from '@xstate/compiled';
 
 interface Context {}
 

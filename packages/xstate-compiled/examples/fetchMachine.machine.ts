@@ -22,10 +22,12 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
       },
     },
     pending: {
-      invoke: {
-        src: 'makeFetch',
-        onDone: 'success',
-      },
+      invoke: [
+        {
+          src: 'makeFetch',
+          onDone: 'success',
+        },
+      ],
     },
     success: {
       // TODO: need to implement arrays support properly

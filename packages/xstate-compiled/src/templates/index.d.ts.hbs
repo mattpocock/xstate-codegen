@@ -32,6 +32,8 @@ import { StateNode } from 'xstate/lib/StateNode';
 
 
 declare module '@xstate/compiled' {
+  type TwoLevelPartial<T extends object> = { [K in keyof T]?: Partial<T[K]>};
+
   /** Generated Types */
   {{#each machines}}
   export class {{capitalize this.id}}StateMachine<
@@ -54,7 +56,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.condLines}}
       guards: {
         {{#each this.machine.condLines}}
-        {{this.name}}: (
+        {{this.name}}{{#unless this.required}}?{{/unless}}: (
           context: TContext,
             {{#if this.events}}
           event:
@@ -71,7 +73,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.actionLines}}
       actions: {
         {{#each this.machine.actionLines}}
-        {{this.name}}:
+        {{this.name}}{{#unless this.required}}?{{/unless}}:
           | ActionObject<
               TContext,
               {{#if this.events}}
@@ -110,7 +112,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.services}}
       services: {
         {{#each this.machine.services}}
-        {{this.name}}: InvokeCreator<
+        {{this.name}}{{#unless this.required}}?{{/unless}}: InvokeCreator<
           TContext, 
           {{#if this.events}}
           Extract<TEvent,
@@ -131,7 +133,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.activities}}
       activities: {
         {{#each this.machine.activities}}    
-        {{this}}: ActivityConfig<TContext, TEvent>;
+        {{this.name}}{{#unless this.required}}?{{/unless}}: ActivityConfig<TContext, TEvent>;
         {{/each}}
       };
       {{/if}}
@@ -235,33 +237,28 @@ declare module '@xstate/compiled' {
     TContext,
     TSchema,
     TEvent extends EventObject,
-    Id extends string
+    Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   > = Omit<Interpreter<TContext, TSchema, TEvent>, 'state'> & {
     state: StateWithMatches<
       TContext,
       TEvent,
-      Extract<
-        RegisteredMachine<TContext, TEvent>,
-        {
-          id: Id;
-        }
-      >['_matches']
+      Id
     >;
   };
 
   export type StateWithMatches<
     TContext,
     TEvent extends EventObject,
-    TMatches
+    Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   > = Omit<State<TContext, TEvent>, 'matches'> & {
-    matches: (matches: TMatches) => boolean;
+    matches: (matches: RegisteredMachinesMap<TContext, TEvent>[Id]['_matches']) => boolean;
   };
 
   export function interpret<
     TContext,
     TSchema,
     TEvent extends EventObject,
-    Id extends string
+    Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   >(
     machine: Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>,
     options: Extract<
@@ -280,6 +277,12 @@ declare module '@xstate/compiled' {
       TEvent,
       RegisteredMachinesMap<TContext, TEvent>[Id]['_subState']
     >,
+    options?: TwoLevelPartial<
+      Extract<
+        RegisteredMachine<TContext, TEvent>,
+        { id: Id }
+      >['_options']
+    >,
   ): RegisteredMachinesMap<TContext, TEvent>[Id];
 
   export function createMachine<
@@ -291,6 +294,12 @@ declare module '@xstate/compiled' {
       TContext,
       TEvent,
       RegisteredMachinesMap<TContext, TEvent>[Id]['_subState']
+    >,
+    options?: TwoLevelPartial<
+      Extract<
+        RegisteredMachine<TContext, TEvent>,
+        { id: Id }
+      >['_options']
     >,
   ): RegisteredMachinesMap<TContext, TEvent>[Id];
 
@@ -529,5 +538,6 @@ declare module '@xstate/compiled' {
     order?: number;
   }
 
-  
+  // @ts-ignore
+  export { mapState, actions, assign, send, sendParent, sendUpdate, forwardTo, matchState, spawn, doneInvoke } from 'xstate';
 }

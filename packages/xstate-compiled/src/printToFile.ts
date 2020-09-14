@@ -5,6 +5,7 @@ import helpers from 'handlebars-helpers';
 import path from 'path';
 import { introspectMachine, SubState } from './introspectMachine';
 import pkgUp from 'pkg-up';
+import rimraf from 'rimraf';
 
 const ensureFolderExists = (absoluteDir: string) => {
   if (fs.existsSync(absoluteDir)) {
@@ -36,7 +37,7 @@ const renderSubstate = (subState: SubState): string => {
   }`;
 };
 
-export const getFileTexts = (
+export const getDeclarationFileTexts = (
   cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
 ) => {
   const indexTemplateString = fs
@@ -45,18 +46,6 @@ export const getFileTexts = (
 
   const reactTemplateString = fs
     .readFileSync(path.resolve(__dirname, './templates/react.d.ts.hbs'))
-    .toString();
-
-  const indexJsTemplate = fs
-    .readFileSync(path.resolve(__dirname, './templates/index.js.hbs'))
-    .toString();
-
-  const reactJsTemplate = fs
-    .readFileSync(path.resolve(__dirname, './templates/react.js.hbs'))
-    .toString();
-
-  const packageJsonTemplate = fs
-    .readFileSync(path.resolve(__dirname, './templates/package.json.hbs'))
     .toString();
 
   helpers({
@@ -77,16 +66,10 @@ export const getFileTexts = (
   return {
     'index.d.ts': indexTemplate({ machines }),
     'react.d.ts': reactTemplate({ machines }),
-    'index.js': indexJsTemplate,
-    'react.js': reactJsTemplate,
-    'package.json': packageJsonTemplate,
   };
 };
 
-export const printToFile = (
-  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
-  outDir?: string,
-) => {
+export const getNodeModulesDir = () => {
   const packageJson = pkgUp.sync();
 
   if (!packageJson) {
@@ -95,18 +78,24 @@ export const printToFile = (
     );
   }
 
-  ensureMultipleFoldersExist(path.dirname(packageJson), [
-    'node_modules',
-    '@xstate',
-    'compiled',
-  ]);
+  const targetDir = path.resolve(path.dirname(packageJson), 'node_modules');
 
-  const targetDir = path.resolve(
-    path.dirname(packageJson),
-    'node_modules/@xstate/compiled',
-  );
+  return targetDir;
+};
 
-  const files = getFileTexts(cache);
+export const printToFile = (
+  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
+  outDir?: string,
+) => {
+  const files = getDeclarationFileTexts(cache);
+  const nodeModulesDir = getNodeModulesDir();
+  const targetDir = path.resolve(nodeModulesDir, '@xstate/compiled');
+
+  /** Delete @xstate/compiled directory so that it triggers VSCode to re-check it */
+  rimraf.sync(path.join(targetDir, '*.d.ts'));
+
+  printJsFiles();
+  ensureMultipleFoldersExist(nodeModulesDir, ['@xstate', 'compiled']);
 
   fs.writeFileSync(
     outDir
@@ -127,8 +116,32 @@ export const printToFile = (
     fs.writeFileSync(path.join(targetDir, 'react.d.ts'), `export default any;`);
     fs.writeFileSync(path.join(targetDir, 'index.d.ts'), `export default any;`);
   }
+};
 
-  fs.writeFileSync(path.join(targetDir, 'index.js'), files['index.js']);
-  fs.writeFileSync(path.join(targetDir, 'react.js'), files['react.js']);
-  fs.writeFileSync(path.join(targetDir, 'package.json'), files['package.json']);
+/**
+ * Prints the js files, which needs to be done in advance
+ * of rollup looking at the code to ensure there is a module for rollup
+ * to statically analyse
+ */
+export const printJsFiles = () => {
+  const nodeModulesDir = getNodeModulesDir();
+  const targetDir = path.resolve(nodeModulesDir, '@xstate/compiled');
+
+  ensureMultipleFoldersExist(nodeModulesDir, ['@xstate', 'compiled']);
+
+  const indexJsTemplate = fs
+    .readFileSync(path.resolve(__dirname, './templates/index.js.hbs'))
+    .toString();
+
+  const reactJsTemplate = fs
+    .readFileSync(path.resolve(__dirname, './templates/react.js.hbs'))
+    .toString();
+
+  const packageJsonTemplate = fs
+    .readFileSync(path.resolve(__dirname, './templates/package.json.hbs'))
+    .toString();
+
+  fs.writeFileSync(path.join(targetDir, 'index.js'), indexJsTemplate);
+  fs.writeFileSync(path.join(targetDir, 'react.js'), reactJsTemplate);
+  fs.writeFileSync(path.join(targetDir, 'package.json'), packageJsonTemplate);
 };

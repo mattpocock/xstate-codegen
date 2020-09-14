@@ -186,6 +186,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       return {
         name,
         events: Array.from(eventSet).filter(Boolean),
+        required: !machine.options.guards[name],
       };
     });
 
@@ -197,6 +198,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       return {
         name,
         events: Array.from(eventSet).filter(Boolean),
+        required: !machine.options.actions[name],
       };
     });
 
@@ -208,6 +210,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       return {
         name,
         events: Array.from(serviceSet).filter(Boolean),
+        required: !machine.options.services[name],
       };
     });
 
@@ -219,6 +222,9 @@ export const introspectMachine = (machine: XState.StateNode) => {
     condLines,
     actionLines,
     services: serviceLines,
-    activities: Array.from(activities),
+    activities: Array.from(activities).map((activity) => ({
+      name: activity,
+      required: !machine.options.activities[activity],
+    })),
   };
 };

@@ -6,7 +6,7 @@ import path from 'path';
 import minimist from 'minimist';
 import { introspectMachine } from './introspectMachine';
 import { extractMachines } from './extractMachines';
-import { printToFile } from './printToFile';
+import { printToFile, printJsFiles } from './printToFile';
 
 const { _: arrayArgs, ...objectArgs } = minimist(process.argv.slice(2));
 
@@ -61,6 +61,7 @@ gaze(pattern, {}, async function(err, watcher) {
     process.exit(1);
   }
 
+  printJsFiles();
   console.clear();
 
   const addToCache = async (filePath: string) => {
@@ -103,16 +104,21 @@ gaze(pattern, {}, async function(err, watcher) {
 
   // @ts-ignore
   this.on('changed', async (filePath) => {
-    console.clear();
     console.log(`File Changed: `.cyan.bold + toRelative(filePath).gray);
     await addToCache(filePath);
     printToFile(fileCache, objectArgs.outDir);
   });
   // @ts-ignore
   this.on('added', async (filePath) => {
-    console.clear();
     console.log(`File Added: `.green.bold + toRelative(filePath).gray);
     await addToCache(filePath);
+    printToFile(fileCache, objectArgs.outDir);
+  });
+
+  // @ts-ignore
+  this.on('deleted', async (filePath) => {
+    console.log(`File Deleted: `.red.bold + toRelative(filePath).gray);
+    delete fileCache[filePath];
     printToFile(fileCache, objectArgs.outDir);
   });
 
