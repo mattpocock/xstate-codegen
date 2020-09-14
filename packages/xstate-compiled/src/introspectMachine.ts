@@ -1,11 +1,12 @@
 import 'colors';
 import * as XState from 'xstate';
-import { toStateValue, toStatePaths, pathToStateValue } from 'xstate/lib/utils';
+import { toStatePaths, pathToStateValue } from 'xstate/lib/utils';
 import { getTransitionsFromNode } from './traversalUtils';
 
 export interface SubState {
   targets: string;
   sources: string;
+  stateValue: XState.StateValue;
   states: Record<string, SubState>;
 }
 
@@ -42,6 +43,7 @@ const makeSubStateFromNode = (
 
   const targets = getTransitionsFromNode(stateNode);
   return {
+    stateValue: pathToStateValue(node.path),
     sources:
       Array.from(nodeFromMap.sources)
         .filter(Boolean)
@@ -62,19 +64,56 @@ const makeSubStateFromNode = (
   };
 };
 
+class ItemMap {
+  private map: {
+    [name: string]: { events: Set<string>; states: Set<XState.StateValue> };
+  } = {};
+
+  addItem(itemName: string, nodePath: string[]) {
+    if (!this.map[itemName]) {
+      this.map[itemName] = {
+        events: new Set(),
+        states: new Set(),
+      };
+    }
+    this.map[itemName].states.add(pathToStateValue(nodePath));
+  }
+
+  addEventToItem(itemName: string, eventType: string, nodePath: string[]) {
+    this.addItem(itemName, nodePath);
+    this.map[itemName].events.add(eventType);
+  }
+
+  toArray() {
+    return Object.entries(this.map)
+      .filter(([name]) => {
+        return !/\./.test(name);
+      })
+      .map(([name, data]) => {
+        return {
+          name,
+          events: Array.from(data.events).filter(Boolean),
+          states: Array.from(data.states)
+            .map((state) => JSON.stringify(state))
+            .filter(Boolean),
+        };
+      });
+  }
+}
+
 const xstateRegex = /^xstate\./;
 
 export const introspectMachine = (machine: XState.StateNode) => {
-  const actionMaps: { [name: string]: Set<string> } = {};
-  const condMaps: { [name: string]: Set<string> } = {};
-  const servicesMaps: { [name: string]: Set<string> } = {};
+  const actionMap = new ItemMap();
+  const condMap = new ItemMap();
+  const serviceMap = new ItemMap();
   const nodeMaps: {
     [id: string]: {
       sources: Set<string>;
       children: Set<string>;
     };
   } = {};
-  let activities: string[] = [];
+  const activityMap = new ItemMap();
 
   const allStateNodes = machine.stateIds.map((id) =>
     machine.getStateNodeById(id),
@@ -97,15 +136,13 @@ export const introspectMachine = (machine: XState.StateNode) => {
     node.activities?.forEach((activity) => {
       if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== 'xstate.invoke') {
-        activities.push(activity.type);
+        activityMap.addItem(activity.type, node.path);
       }
     });
 
     node.invoke?.forEach((service) => {
       if (typeof service.src !== 'string' || /\./.test(service.src)) return;
-      if (!servicesMaps[service.src]) {
-        servicesMaps[service.src] = new Set();
-      }
+      serviceMap.addItem(service.src, node.path);
     });
 
     node.transitions?.forEach((transition) => {
@@ -116,10 +153,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
       );
       if (transition.cond && transition.cond.name) {
         if (transition.cond.name !== 'cond') {
-          if (!condMaps[transition.cond.name]) {
-            condMaps[transition.cond.name] = new Set();
-          }
-          condMaps[transition.cond.name].add(transition.eventType);
+          condMap.addEventToItem(
+            transition.cond.name,
+            transition.eventType,
+            node.path,
+          );
         }
       }
 
@@ -129,10 +167,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
           targetNode.invoke?.forEach((service) => {
             if (typeof service.src !== 'string' || /\./.test(service.src))
               return;
-            if (!servicesMaps[service.src]) {
-              servicesMaps[service.src] = new Set();
-            }
-            servicesMaps[service.src].add(transition.eventType);
+            serviceMap.addEventToItem(
+              service.src,
+              transition.eventType,
+              targetNode.path,
+            );
           });
         },
       );
@@ -140,10 +179,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
       if (transition.actions) {
         transition.actions?.forEach((action) => {
           if (!xstateRegex.test(action.type)) {
-            if (!actionMaps[action.type]) {
-              actionMaps[action.type] = new Set();
-            }
-            actionMaps[action.type].add(transition.eventType);
+            actionMap.addEventToItem(
+              action.type,
+              transition.eventType,
+              node.path,
+            );
           }
           return {
             name: action.type,
@@ -161,70 +201,53 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
     allActions?.forEach((action) => {
       if (xstateRegex.test(action.type) || action.exec) return;
-      if (!actionMaps[action.type]) {
-        actionMaps[action.type] = new Set();
-      }
+      actionMap.addItem(action.type, node.path);
     });
 
     node.onEntry?.forEach((action) => {
       const sources = nodeMaps[node.id].sources;
       sources?.forEach((source) => {
-        if (!actionMaps[action.type]) {
-          /* istanbul ignore next */
-          actionMaps[action.type] = new Set();
-        }
-        actionMaps[action.type].add(source);
+        actionMap.addEventToItem(action.type, source, node.path);
       });
     });
   });
-
-  const condLines = Object.entries(condMaps)
-    .filter(([name]) => {
-      return !/\./.test(name);
-    })
-    .map(([name, eventSet]) => {
-      return {
-        name,
-        events: Array.from(eventSet).filter(Boolean),
-        required: !machine.options.guards[name],
-      };
-    });
-
-  const actionLines = Object.entries(actionMaps)
-    .filter(([name]) => {
-      return !/\./.test(name);
-    })
-    .map(([name, eventSet]) => {
-      return {
-        name,
-        events: Array.from(eventSet).filter(Boolean),
-        required: !machine.options.actions[name],
-      };
-    });
-
-  const serviceLines = Object.entries(servicesMaps)
-    .filter(([name]) => {
-      return !/\./.test(name);
-    })
-    .map(([name, serviceSet]) => {
-      return {
-        name,
-        events: Array.from(serviceSet).filter(Boolean),
-        required: !machine.options.services[name],
-      };
-    });
 
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
 
   return {
     stateMatches: getMatchesStates(machine),
     subState,
-    condLines,
-    actionLines,
-    services: serviceLines,
-    activities: Array.from(activities).map((activity) => ({
-      name: activity,
-      required: !machine.options.activities[activity],
-    })),
+    condLines: condMap.toArray().map(({ events, name, states }) => {
+      return {
+        states,
+        events,
+        name,
+        required: !machine.options.guards[name],
+      };
+    }),
+    actionLines: actionMap.toArray().map(({ events, name, states }) => {
+      return {
+        states,
+        events,
+        name,
+        required: !machine.options.actions[name],
+      };
+    }),
+    services: serviceMap.toArray().map(({ events, name, states }) => {
+      return {
+        states,
+        events,
+        name,
+        required: !machine.options.services[name],
+      };
+    }),
+    activities: activityMap.toArray().map(({ events, name, states }) => {
+      return {
+        states,
+        events,
+        name,
+        required: !machine.options.activities[name],
+      };
+    }),
   };
 };

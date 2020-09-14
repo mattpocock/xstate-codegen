@@ -27,6 +27,7 @@ const renderSubstate = (subState: SubState): string => {
   return `{
     targets: ${subState.targets};
     sources: ${subState.sources};
+    stateValue: ${JSON.stringify(subState.stateValue)};
     states: {
       ${Object.entries(subState.states)
         .map(([key, state]) => {

@@ -95,13 +95,16 @@ const getMachineId = (
 ) => {
   const { typeParameters } = callExpression;
 
+  const lastParameter =
+    typeParameters?.params?.[typeParameters?.params?.length - 1];
+
   if (
     !typeParameters ||
-    !typeParameters.params[2] ||
-    !t.isTSLiteralType(typeParameters.params[2]) ||
-    !t.isStringLiteral(typeParameters.params[2].literal)
+    !lastParameter ||
+    !t.isTSLiteralType(lastParameter) ||
+    !t.isStringLiteral(lastParameter.literal)
   ) {
-    console.log('You must pass three type arguments to your machine.');
+    console.log('You must pass an ID property to your machine');
     console.log();
     console.log('For instance:');
     console.log(
@@ -110,7 +113,7 @@ const getMachineId = (
     console.log();
     throw new Error('You must pass three type arguments to your machine.');
   }
-  return typeParameters.params[2].literal.value;
+  return lastParameter.literal.value;
 };
 
 const insertExtractingExport = (

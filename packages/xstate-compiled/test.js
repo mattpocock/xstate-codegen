@@ -15,6 +15,6 @@ execSync(
   },
 );
 
-execSync('cd examples && npm run build', {
+execSync('cd examples && tsc', {
   stdio: 'inherit',
 });
