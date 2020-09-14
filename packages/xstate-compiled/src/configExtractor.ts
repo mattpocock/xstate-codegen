@@ -1,24 +1,32 @@
-import { Type, ts } from 'ts-morph';
+import { Type, ts, Node } from 'ts-morph';
 
 const indexer = Symbol('schema.extractor.indexer');
+
+// require('./bin/extractMachines').extractMachines('examples/fetchMachine.machine.ts')
 
 // TODO: implement support for inline functions - we just need to skip them
 // but probably would be good to declare that in a schema somehow?
 
 type TypeExtractor = {
   extract: (
-    type: Type | undefined,
+    node: Node | undefined,
   ) => [true, undefined] | [false, any, boolean?];
 };
 
 const lazy = (getter: () => TypeExtractor): TypeExtractor => ({
-  extract: (type: Type | undefined) => getter().extract(type),
+  extract: (node: Node | undefined) => getter().extract(node),
 });
 const object = (
   shape: Record<string | symbol, TypeExtractor>,
 ): TypeExtractor => ({
-  extract(type: Type | undefined) {
-    if (!type || !type.isObject()) {
+  extract(node: Node | undefined) {
+    if (!node) {
+      return [true, undefined];
+    }
+
+    const type = node.getType();
+
+    if (!type.isObject()) {
       return [true, undefined];
     }
 
@@ -35,9 +43,9 @@ const object = (
       const valueDeclar = objectType
         .getProperty(key)
         ?.getValueDeclarationOrThrow() as any; /* PropertyAssignment */
-      const propType = valueDeclar?.getInitializerOrThrow().getType();
+      const propSymbol = valueDeclar?.getInitializerOrThrow();
 
-      const [err, value, hasValue] = shape[key].extract(propType);
+      const [err, value, hasValue] = shape[key].extract(propSymbol);
       if (err) {
         return [err, undefined];
       }
@@ -54,9 +62,9 @@ const object = (
           continue;
         }
         const valueDeclar = prop?.getValueDeclarationOrThrow() as any; /* PropertyAssignment */
-        const propType = valueDeclar?.getInitializerOrThrow().getType();
+        const propSymbol = valueDeclar?.getInitializerOrThrow();
 
-        const [err, value, hasValue] = indexerExtractor.extract(propType);
+        const [err, value, hasValue] = indexerExtractor.extract(propSymbol);
         if (err) {
           return [err, undefined];
         }
@@ -70,25 +78,42 @@ const object = (
   },
 });
 const optional = (t: TypeExtractor): TypeExtractor => ({
-  extract(type: Type | undefined) {
-    if (!type) {
+  extract(node: Node | undefined) {
+    if (!node) {
       return [false, undefined, false];
     }
-    return t.extract(type);
+    return t.extract(node);
   },
 });
-const array = (type: TypeExtractor): TypeExtractor => ({
-  extract(type: Type | undefined) {
-    if (!type || !type.isArray()) {
+const array = (typeExtractor: TypeExtractor): TypeExtractor => ({
+  extract(node: Node | undefined) {
+    if (!node) {
       return [true, undefined];
     }
-    throw new Error('Extracting arrays is not implemented yet.');
+
+    // TODO: handle tuple types
+    if (!Node.isArrayLiteralExpression(node)) {
+      return [true, undefined];
+    }
+
+    const result = [];
+
+    for (const element of node.getElements()) {
+      const [err, value, hasValue] = typeExtractor.extract(element);
+      if (err) {
+        return [err, undefined];
+      }
+      if (hasValue) {
+        result.push(value);
+      }
+    }
+    return [false, result, true];
   },
 });
 const match = (candidates: TypeExtractor[]): TypeExtractor => ({
-  extract(type: Type | undefined) {
+  extract(node: Node | undefined) {
     for (const candidate of candidates) {
-      const [, value, hasValue] = candidate.extract(type);
+      const [, value, hasValue] = candidate.extract(node);
       if (hasValue) {
         return [false, value, true];
       }
@@ -98,24 +123,36 @@ const match = (candidates: TypeExtractor[]): TypeExtractor => ({
   },
 });
 const undef = (): TypeExtractor => ({
-  extract(type: Type | undefined) {
-    if (!type || !type.isUndefined()) {
+  extract(node: Node | undefined) {
+    if (!node) {
+      return [true, undefined];
+    }
+    const type = node.getType();
+    if (!type.isUndefined()) {
       return [true, undefined];
     }
     return [false, undefined, true];
   },
 });
 const bool = (literal?: boolean): TypeExtractor => ({
-  extract(type: Type | undefined) {
-    if (!type || !type.isBooleanLiteral()) {
+  extract(node: Node | undefined) {
+    if (!node) {
+      return [true, undefined];
+    }
+    const type = node.getType();
+    if (!type.isBooleanLiteral()) {
       return [true, undefined];
     }
     return [false, (type.compilerType as any).intrinsicName === 'true', true];
   },
 });
 const string = (literals?: string[]): TypeExtractor => ({
-  extract(type: Type | undefined) {
-    if (!type || !type.isStringLiteral()) {
+  extract(node: Node | undefined) {
+    if (!node) {
+      return [true, undefined];
+    }
+    const type = node.getType();
+    if (!type.isStringLiteral()) {
       return [true, undefined];
     }
 
@@ -127,8 +164,8 @@ const string = (literals?: string[]): TypeExtractor => ({
   },
 });
 
-const SingleOrArray = (type: TypeExtractor): TypeExtractor =>
-  match([type, array(type)]);
+const SingleOrArray = (typeExtractor: TypeExtractor): TypeExtractor =>
+  match([typeExtractor, array(typeExtractor)]);
 
 const Actions = SingleOrArray(string());
 
@@ -218,6 +255,6 @@ const States = object({
   [indexer]: State,
 });
 
-const extractConfig = (configType: Type) => State.extract(configType);
+const extractConfig = (node: Node) => State.extract(node);
 
 export default extractConfig;

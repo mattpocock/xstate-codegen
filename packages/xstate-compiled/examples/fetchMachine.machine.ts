@@ -30,9 +30,7 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
       ],
     },
     success: {
-      // TODO: need to implement arrays support properly
-      // entry: ['celebrate'],
-      entry: 'celebrate',
+      entry: ['celebrate'],
     },
   },
 });

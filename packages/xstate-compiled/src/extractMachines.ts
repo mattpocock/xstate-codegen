@@ -83,8 +83,8 @@ export const extractMachines = async (
       );
     }
 
-    const configType = machineCall.getArguments()[0].getType();
-    const [error, config] = extractConfig(configType);
+    const configNode = machineCall.getArguments()[0];
+    const [error, config] = extractConfig(configNode);
 
     if (error) {
       throw new Error('Could not extract config.');

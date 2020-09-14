@@ -20,7 +20,6 @@
     "xstate": "^4.12.0"
   },
   "devDependencies": {
-    "@types/rimraf": "^3.0.0",
     "@changesets/cli": "^2.9.2",
     "@types/babel-plugin-macros": "^2.8.2",
     "@types/babel__core": "^7.1.9",
@@ -29,9 +28,11 @@
     "@types/handlebars-helpers": "^0.5.2",
     "@types/minimist": "^1.2.0",
     "@types/node": "^14.0.14",
+    "@types/rimraf": "^3.0.0",
     "@xstate/react": "^0.8.1",
-    "typescript": "^3.9.7",
-    "nodemon": "2.0.4"
+    "nodemon": "2.0.4",
+    "ts-node": "^9.0.0",
+    "typescript": "^3.9.7"
   },
   "scripts": {
     "local-link": "yarn unlink && npm run build && npm run chmod:index && yarn link",
