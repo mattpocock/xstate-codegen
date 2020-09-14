@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "types": [
-      "node",
-      "jest"
-    ],
+    "types": ["node", "jest"],
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -13,9 +10,11 @@
     "resolveJsonModule": true,
     "strictNullChecks": true,
     "outDir": "bin",
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "noEmitOnError": false,
+    "target": "ES2017",
+    "module": "CommonJS",
+    "lib": ["ES2020"]
   },
-  "include": [
-    "src",
-  ]
+  "include": ["src"]
 }

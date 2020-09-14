@@ -28,7 +28,9 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
       },
     },
     success: {
-      entry: ['celebrate'],
+      // TODO: need to implement arrays support properly
+      // entry: ['celebrate'],
+      entry: 'celebrate',
     },
   },
 });
