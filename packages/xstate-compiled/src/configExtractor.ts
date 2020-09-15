@@ -2,8 +2,6 @@ import { Type, ts, Node } from 'ts-morph';
 
 const indexer = Symbol('schema.extractor.indexer');
 
-// require('./bin/extractMachines').extractMachines('examples/fetchMachine.machine.ts')
-
 // TODO: implement support for inline functions - we just need to skip them
 // but probably would be good to declare that in a schema somehow?
 
@@ -43,9 +41,9 @@ const object = (
       const valueDeclar = objectType
         .getProperty(key)
         ?.getValueDeclarationOrThrow() as any; /* PropertyAssignment */
-      const propSymbol = valueDeclar?.getInitializerOrThrow();
+      const propNode = valueDeclar?.getInitializerOrThrow();
 
-      const [err, value, hasValue] = shape[key].extract(propSymbol);
+      const [err, value, hasValue] = shape[key].extract(propNode);
       if (err) {
         return [err, undefined];
       }
@@ -62,9 +60,9 @@ const object = (
           continue;
         }
         const valueDeclar = prop?.getValueDeclarationOrThrow() as any; /* PropertyAssignment */
-        const propSymbol = valueDeclar?.getInitializerOrThrow();
+        const propNode = valueDeclar?.getInitializerOrThrow();
 
-        const [err, value, hasValue] = indexerExtractor.extract(propSymbol);
+        const [err, value, hasValue] = indexerExtractor.extract(propNode);
         if (err) {
           return [err, undefined];
         }
@@ -174,7 +172,7 @@ const Target = match([undef(), SingleOrArray(string())]);
 const Transition = match([
   Target,
   object({
-    target: Target,
+    target: optional(Target),
     cond: optional(string()),
     actions: optional(Actions),
     internal: optional(bool()),

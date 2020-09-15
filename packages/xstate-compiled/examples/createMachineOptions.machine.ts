@@ -1,4 +1,4 @@
-import { createMachine, interpret } from '@xstate/compiled';
+import { Machine, interpret } from '@xstate/compiled';
 
 interface Context {}
 
@@ -8,7 +8,7 @@ type Event = { type: 'MAKE_FETCH' };
  * Ensures that optional parameters register as non-required
  * when passed in as a second param
  */
-const machine = createMachine<Context, Event, 'createMachineOptions'>(
+const machine = Machine<Context, Event, 'createMachineOptions'>(
   {
     initial: 'idle',
     states: {
@@ -41,9 +41,9 @@ const machine = createMachine<Context, Event, 'createMachineOptions'>(
     services: {
       nonRequiredService: async () => {},
     },
-    activities: {
-      nonRequiredActivity: () => {},
-    },
+    // activities: {
+    //   nonRequiredActivity: () => {},
+    // },
     guards: {
       nonRequiredCond: () => false,
     },
@@ -57,9 +57,9 @@ interpret(machine, {
   services: {
     requiredService: async () => {},
   },
-  activities: {
-    requiredActivity: () => {},
-  },
+  // activities: {
+  //   requiredActivity: () => {},
+  // },
   guards: {
     requiredCond: () => true,
   },

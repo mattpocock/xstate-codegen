@@ -67,6 +67,9 @@ export const extractMachines = async (
     .flatMap((references) => references.getReferences())
     .map((reference) => reference.getNode())
     .filter((referenceNode) => {
+      if (referenceNode.getSourceFile() !== sourceFile) {
+        return false;
+      }
       const statement = referenceNode.getFirstAncestor(Node.isStatement);
       return !statement || !Node.isImportDeclaration(statement);
     });
