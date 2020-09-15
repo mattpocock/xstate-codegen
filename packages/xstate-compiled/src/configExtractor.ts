@@ -215,6 +215,7 @@ const AtomicState = object({
   exit: optional(Actions),
   invoke: optional(Invoke),
   on: optional(TransitionsMap),
+  after: optional(TransitionsMap),
 });
 const CompoundState = object({
   type: optional(string(['compound'])),
@@ -225,6 +226,7 @@ const CompoundState = object({
   invoke: optional(Invoke),
   states: lazy(() => States),
   on: optional(TransitionsMap),
+  after: optional(TransitionsMap),
 });
 const ParallelState = object({
   type: string(['parallel']),
@@ -234,6 +236,7 @@ const ParallelState = object({
   invoke: optional(Invoke),
   states: lazy(() => States),
   on: optional(TransitionsMap),
+  after: optional(TransitionsMap),
 });
 const FinalState = object({
   type: string(['final']),
