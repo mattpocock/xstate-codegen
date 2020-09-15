@@ -1,7 +1,7 @@
 import path from 'path';
 import { StateMachine, Machine } from 'xstate';
 import { Project, ts, Node } from 'ts-morph';
-import extractConfig from './configExtractor';
+import extractConfig, { extractOptions } from './configExtractor';
 
 type ExtractedMachine = {
   id: string;
@@ -87,10 +87,17 @@ export const extractMachines = async (
     }
 
     const configNode = machineCall.getArguments()[0];
-    const [error, config] = extractConfig(configNode);
+    const [configErr, config] = extractConfig(configNode);
 
-    if (error) {
+    if (configErr) {
       throw new Error('Could not extract config.');
+    }
+
+    const optionsNode = machineCall.getArguments()[1];
+    const [optionsErr, options] = extractOptions(optionsNode);
+
+    if (optionsErr) {
+      throw new Error('Could not extract options.');
     }
 
     const secondTypeArg = machineCall.getTypeArguments()[2];
@@ -111,7 +118,7 @@ export const extractMachines = async (
 
     return {
       id: literal.getLiteralValue(),
-      machine: Machine(config as any),
+      machine: Machine(config as any, options as any),
     };
   });
 };

@@ -162,6 +162,18 @@ const string = (literals?: string[]): TypeExtractor => ({
   },
 });
 
+const func = (): TypeExtractor => ({
+  extract(node: Node | undefined) {
+    if (!node) {
+      return [true, undefined];
+    }
+    if (!Node.isFunctionLikeDeclaration(node)) {
+      return [true, undefined];
+    }
+    return [false, () => {}, true];
+  },
+});
+
 const SingleOrArray = (typeExtractor: TypeExtractor): TypeExtractor =>
   match([typeExtractor, array(typeExtractor)]);
 
@@ -256,3 +268,25 @@ const States = object({
 const extractConfig = (node: Node) => State.extract(node);
 
 export default extractConfig;
+
+const Options = optional(
+  object({
+    actions: optional(
+      object({
+        [indexer]: func(),
+      }),
+    ),
+    guards: optional(
+      object({
+        [indexer]: func(),
+      }),
+    ),
+    services: optional(
+      object({
+        [indexer]: func(),
+      }),
+    ),
+  }),
+);
+
+export const extractOptions = (node: Node) => Options.extract(node);

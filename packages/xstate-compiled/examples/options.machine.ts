@@ -30,7 +30,6 @@ const machine = Machine<Context, Event, 'optionsMachine'>(
             src: 'nonRequiredService',
           },
         ],
-        activities: ['requiredActivity', 'nonRequiredActivity'],
       },
     },
   },
@@ -40,9 +39,6 @@ const machine = Machine<Context, Event, 'optionsMachine'>(
     },
     services: {
       nonRequiredService: async () => {},
-    },
-    activities: {
-      nonRequiredActivity: () => {},
     },
     guards: {
       nonRequiredCond: () => false,
@@ -56,9 +52,6 @@ interpret(machine, {
   },
   services: {
     requiredService: async () => {},
-  },
-  activities: {
-    requiredActivity: () => {},
   },
   guards: {
     requiredCond: () => true,
