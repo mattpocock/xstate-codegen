@@ -9,6 +9,16 @@ export interface SubState {
   states: Record<string, SubState>;
 }
 
+const toCompactArray = <T>(maybeArray: T | T[] | undefined): T[] => {
+  if (!maybeArray) {
+    return [];
+  }
+  if (Array.isArray(maybeArray)) {
+    return maybeArray;
+  }
+  return [maybeArray];
+};
+
 export const getMatchesStates = (machine: XState.StateNode) => {
   const allStateNodes = machine.stateIds.map((id) =>
     machine.getStateNodeById(id),
@@ -80,14 +90,14 @@ export const introspectMachine = (machine: XState.StateNode) => {
     machine.getStateNodeById(id),
   );
 
-  allStateNodes?.forEach((node) => {
+  allStateNodes.forEach((node) => {
     nodeMaps[node.id] = {
       sources: new Set(),
       children: new Set(),
     };
   });
 
-  allStateNodes?.forEach((node) => {
+  allStateNodes.forEach((node) => {
     Object.values(node.states)?.forEach((childNode) => {
       nodeMaps[node.id].children.add(childNode.id);
     });
@@ -107,6 +117,40 @@ export const introspectMachine = (machine: XState.StateNode) => {
         servicesMaps[service.src] = new Set();
       }
     });
+
+    const on = node.config.on || {};
+
+    if (!Array.isArray(on)) {
+      Object.entries(on).forEach(([eventName, transition]) => {
+        if (
+          !transition ||
+          typeof transition === 'string' ||
+          // won't be needed in v5
+          '__xstatenode' in transition
+        ) {
+          return;
+        }
+        toCompactArray(transition).forEach((transition) => {
+          if (
+            !transition ||
+            typeof transition === 'string' ||
+            // won't be needed in v5
+            '__xstatenode' in transition
+          ) {
+            return;
+          }
+
+          toCompactArray(transition.actions)
+            .filter((action): action is string => typeof action === 'string')
+            .forEach((action) => {
+              if (!actionMaps[action]) {
+                actionMaps[action] = new Set();
+              }
+              actionMaps[action].add(eventName);
+            });
+        });
+      });
+    }
 
     node.transitions?.forEach((transition) => {
       ((transition.target as unknown) as XState.StateNode[])?.forEach(
@@ -136,44 +180,35 @@ export const introspectMachine = (machine: XState.StateNode) => {
           });
         },
       );
-
-      if (transition.actions) {
-        transition.actions?.forEach((action) => {
-          if (!xstateRegex.test(action.type)) {
-            if (!actionMaps[action.type]) {
-              actionMaps[action.type] = new Set();
-            }
-            actionMaps[action.type].add(transition.eventType);
-          }
-          return {
-            name: action.type,
-            event: transition.eventType,
-          };
-        });
-      }
     });
   });
 
-  allStateNodes?.forEach((node) => {
-    const allActions: XState.ActionObject<any, any>[] = [];
-    allActions.push(...node.onExit);
-    allActions.push(...node.onEntry);
+  allStateNodes.forEach((node) => {
+    const allActions: string[] = [];
+    const stringEntryActions = toCompactArray(node.config.entry).filter(
+      (action): action is string => typeof action === 'string',
+    );
+    const stringExitActions = toCompactArray(node.config.exit).filter(
+      (action): action is string => typeof action === 'string',
+    );
+    allActions.push(...stringEntryActions);
+    allActions.push(...stringExitActions);
 
-    allActions?.forEach((action) => {
-      if (xstateRegex.test(action.type) || action.exec) return;
-      if (!actionMaps[action.type]) {
-        actionMaps[action.type] = new Set();
+    allActions.forEach((action) => {
+      if (!actionMaps[action]) {
+        actionMaps[action] = new Set();
       }
     });
 
-    node.onEntry?.forEach((action) => {
+    stringEntryActions.forEach((action) => {
       const sources = nodeMaps[node.id].sources;
+
       sources?.forEach((source) => {
-        if (!actionMaps[action.type]) {
+        if (!actionMaps[action]) {
           /* istanbul ignore next */
-          actionMaps[action.type] = new Set();
+          actionMaps[action] = new Set();
         }
-        actionMaps[action.type].add(source);
+        actionMaps[action].add(source);
       });
     });
   });
@@ -190,17 +225,13 @@ export const introspectMachine = (machine: XState.StateNode) => {
       };
     });
 
-  const actionLines = Object.entries(actionMaps)
-    .filter(([name]) => {
-      return !/\./.test(name);
-    })
-    .map(([name, eventSet]) => {
-      return {
-        name,
-        events: Array.from(eventSet).filter(Boolean),
-        required: !machine.options.actions[name],
-      };
-    });
+  const actionLines = Object.entries(actionMaps).map(([name, eventSet]) => {
+    return {
+      name,
+      events: Array.from(eventSet).filter(Boolean),
+      required: !machine.options.actions[name],
+    };
+  });
 
   const serviceLines = Object.entries(servicesMaps)
     .filter(([name]) => {

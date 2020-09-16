@@ -1,5 +1,4 @@
 bin/__tests__
-bin/fake_node_modules
 examples
 coverage
 node_modules

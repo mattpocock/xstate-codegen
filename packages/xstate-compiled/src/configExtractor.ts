@@ -177,7 +177,36 @@ const func = (): TypeExtractor => ({
 const SingleOrArray = (typeExtractor: TypeExtractor): TypeExtractor =>
   match([typeExtractor, array(typeExtractor)]);
 
-const Actions = SingleOrArray(string());
+const Action = (): TypeExtractor => ({
+  extract(node: Node | undefined) {
+    if (!node) {
+      return [true, undefined];
+    }
+
+    const symbol =
+      (Node.isCallExpression(node) && node.getReturnType().getSymbol()) ||
+      (Node.isIdentifier(node) && node.getType().getSymbol());
+
+    if (symbol === false) {
+      return [true, undefined];
+    }
+
+    if (symbol === undefined) {
+      // not ideal, this might be an inline action call (like `actions: assign()`)
+      // our types might not be generated during the initial run and thus we might not be able to obtain a type
+      // from such an import without types defs, we just return a function to imitate an inline function
+      return [false, () => {}, true];
+    }
+
+    // very simplistic check which covers most of the cases but is not 100% correct (can result in false positives)
+    if (!/Action$/.test(symbol.getName())) {
+      return [true, undefined];
+    }
+
+    return [false, () => {}, true];
+  },
+});
+const Actions = SingleOrArray(match([string(), Action()]));
 
 const Target = match([undef(), SingleOrArray(string())]);
 

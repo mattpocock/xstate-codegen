@@ -35,8 +35,7 @@
     "typescript": "^3.9.7"
   },
   "scripts": {
-    "local-link": "yarn unlink && npm run build && npm run chmod:index && yarn link",
-    "build": "rm -rf bin && tsc && cp -r src/templates bin/templates && cp -r src/fake_node_modules examples/node_modules",
+    "build": "rm -rf bin && tsc && cp -r src/templates bin/templates",
     "prepare": "npm run build",
     "prepublishOnly": "npm run test && npm run build",
     "test": "node test.js",
