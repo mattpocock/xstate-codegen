@@ -2,9 +2,6 @@ import { Type, ts, Node } from 'ts-morph';
 
 const indexer = Symbol('schema.extractor.indexer');
 
-// TODO: implement support for inline functions - we just need to skip them
-// but probably would be good to declare that in a schema somehow?
-
 type TypeExtractor = {
   extract: (
     node: Node | undefined,
@@ -208,7 +205,7 @@ const Action = (): TypeExtractor => ({
     return [false, () => {}, true];
   },
 });
-const Actions = SingleOrArray(match([string(), Action()]));
+const Actions = SingleOrArray(match([string(), func(), Action()]));
 
 const Target = match([undef(), SingleOrArray(string())]);
 
