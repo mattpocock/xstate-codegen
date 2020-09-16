@@ -38,7 +38,7 @@ export const complexMachineMachine = Machine<
           ],
         },
         errored: {
-          onEntry: send('REPORT_NO_PERMISSION_TO_VIEW'),
+          entry: send('REPORT_NO_PERMISSION_TO_VIEW'),
         },
         isLoggedInAsAUser: {
           entry: 'startDataStream',
@@ -94,7 +94,7 @@ export const complexMachineMachine = Machine<
               },
             },
             errored: {
-              onEntry: send('REPORT_NO_PERMISSION_TO_VIEW'),
+              entry: send('REPORT_NO_PERMISSION_TO_VIEW'),
             },
             checksComplete: {
               type: 'final',
@@ -103,7 +103,7 @@ export const complexMachineMachine = Machine<
           onDone: 'awaitingFirstPacketOfData',
         },
         awaitingFirstPacketOfData: {
-          onEntry: 'startDataStream',
+          entry: 'startDataStream',
           on: {
             RECEIVE_DATA: [
               {
@@ -421,7 +421,7 @@ export const complexMachineMachine = Machine<
               on: {
                 JOIN_CALL: 'requestingTwilioAudioOptions',
               },
-              onEntry: 'reportHasNotJoinedCall',
+              entry: 'reportHasNotJoinedCall',
             },
             requestingTwilioAudioOptions: {
               invoke: {
@@ -470,7 +470,7 @@ export const complexMachineMachine = Machine<
             },
             inCall: {
               type: 'parallel',
-              onEntry: 'reportHasJoinedCall',
+              entry: 'reportHasJoinedCall',
               states: {
                 callOptionsModal: {
                   initial: 'closed',
@@ -512,7 +512,7 @@ export const complexMachineMachine = Machine<
                       ],
                     },
                     noVideo: {
-                      onEntry: ['reportHostIsNotSharingVideo'],
+                      entry: ['reportHostIsNotSharingVideo'],
                       on: {
                         TURN_ON_VIDEO: {
                           cond: 'isHost',
@@ -534,8 +534,8 @@ export const complexMachineMachine = Machine<
                       },
                     },
                     video: {
-                      onEntry: ['reportHostIsSharingVideo'],
-                      onExit: ['reportHostIsNotSharingVideo'],
+                      entry: ['reportHostIsSharingVideo'],
+                      exit: ['reportHostIsNotSharingVideo'],
                       on: {
                         HIDE_VIDEO: {
                           target: 'noVideo',
@@ -560,14 +560,14 @@ export const complexMachineMachine = Machine<
                       ],
                     },
                     muted: {
-                      onEntry: 'ensureMicrophoneMuted',
+                      entry: 'ensureMicrophoneMuted',
                       on: {
                         TOGGLE_MUTE: 'unmuted',
                         UNMUTE: 'unmuted',
                       },
                     },
                     unmuted: {
-                      onEntry: 'ensureMicrophoneUnmuted',
+                      entry: 'ensureMicrophoneUnmuted',
                       on: {
                         TOGGLE_MUTE: 'muted',
                         MUTE: 'muted',
@@ -578,7 +578,7 @@ export const complexMachineMachine = Machine<
               },
             },
             callErrored: {
-              onEntry: 'reportHasNotJoinedCall',
+              entry: 'reportHasNotJoinedCall',
               type: 'final',
             },
           },
