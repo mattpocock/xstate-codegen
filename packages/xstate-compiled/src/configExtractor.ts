@@ -183,11 +183,13 @@ const Action = (): TypeExtractor => ({
       return [true, undefined];
     }
 
-    const symbol =
-      (Node.isCallExpression(node) && node.getReturnType().getSymbol()) ||
-      (Node.isIdentifier(node) && node.getType().getSymbol());
+    const symbol = Node.isCallExpression(node)
+      ? node.getReturnType().getSymbol()
+      : Node.isIdentifier(node)
+      ? node.getType().getSymbol()
+      : null;
 
-    if (symbol === false) {
+    if (symbol === null) {
       return [true, undefined];
     }
 
@@ -214,7 +216,7 @@ const Transition = match([
   Target,
   object({
     target: optional(Target),
-    cond: optional(string()),
+    cond: optional(match([string(), func()])),
     actions: optional(Actions),
     internal: optional(bool()),
   }),
