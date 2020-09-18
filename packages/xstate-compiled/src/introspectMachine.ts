@@ -221,12 +221,17 @@ export const introspectMachine = (machine: XState.StateNode) => {
     lines: actionLines,
   };
 
+  const services = {
+    servicesRequired: actionLines.some((item) => item.required),
+    lines: serviceLines,
+  };
+
   return {
     stateMatches: getMatchesStates(machine),
     subState,
     condLines,
     actions,
-    services: serviceLines,
+    services,
     activities: Array.from(activities).map((activity) => ({
       name: activity,
       required: !machine.options.activities[activity],

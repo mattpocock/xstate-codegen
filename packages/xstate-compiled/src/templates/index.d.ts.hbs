@@ -110,8 +110,8 @@ declare module '@xstate/compiled' {
       };
       {{/if}}
       {{#if this.machine.services}}
-      services: {
-        {{#each this.machine.services}}
+      services{{#unless this.machine.services.servicesRequired}}?{{/unless}}: {
+        {{#each this.machine.services.lines}}
         {{this.name}}{{#unless this.required}}?{{/unless}}: InvokeCreator<
           TContext, 
           {{#if this.events}}
