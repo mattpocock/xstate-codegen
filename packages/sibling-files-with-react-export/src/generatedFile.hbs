@@ -8,7 +8,7 @@ import {
   EventObject,
   State,
   Interpreter,
-  {{#if actionLines}}
+  {{#if actions}}
   ActionObject,
   ActionFunction,
   {{/if}}
@@ -48,34 +48,34 @@ export interface {{ capitalize id }}Options<Context = any, Event extends EventOb
     {{/each}}
   };
   {{/if}}
-  {{#if actionLines}}
+  {{#if actions}}
   actions: {
-    {{#each actionLines}}
-    {{this.name}}:
-      | ActionObject<
-          Context,
-          {{#if this.events}}
-          Extract<Event,
-          {{#each this.events}}
-          | { type: '{{this}}' }
-          {{/each}}
+    {{#each actionLines.lines}}
+      {{this.name}}:
+        | ActionObject<
+            Context,
+            {{#if this.events}}
+            Extract<Event,
+            {{#each this.events}}
+            | { type: '{{this}}' }
+            {{/each}}
+            >
+            {{else}}
+            Event
+            {{/if}}
           >
-          {{else}}
-          Event
-          {{/if}}
-        >
-      | ActionFunction<
-          Context,
-          {{#if this.events}}
-          Extract<Event,
-          {{#each this.events}}
-          | { type: '{{this}}' }
-          {{/each}}
-          >
-          {{else}}
-          Event
-          {{/if}}
-        >;
+        | ActionFunction<
+            Context,
+            {{#if this.events}}
+            Extract<Event,
+            {{#each this.events}}
+            | { type: '{{this}}' }
+            {{/each}}
+            >
+            {{else}}
+            Event
+            {{/if}}
+          >;
     {{/each}}
   };
   {{/if}}

@@ -70,42 +70,42 @@ declare module '@xstate/compiled' {
         {{/each}}
       };
       {{/if}}
-      {{#if this.machine.actionLines}}
-      actions: {
-        {{#each this.machine.actionLines}}
-        {{this.name}}{{#unless this.required}}?{{/unless}}:
-          | ActionObject<
-              TContext,
-              {{#if this.events}}
-              Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
-              > extends undefined ? TEvent : Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
+      {{#if this.machine.actions}}
+      actions{{#unless this.machine.actions.actionsRequired}}?{{/unless}}: {  
+        {{#each this.machine.actions.lines}}
+          {{this.name}}{{#unless this.required}}?{{/unless}}:
+            | ActionObject<
+                TContext,
+                {{#if this.events}}
+                Extract<TEvent,
+                {{#each this.events}}
+                | { type: '{{this}}' }
+                {{/each}}
+                > extends undefined ? TEvent : Extract<TEvent,
+                {{#each this.events}}
+                | { type: '{{this}}' }
+                {{/each}}
+                >
+                {{else}}
+                TEvent
+                {{/if}}
               >
-              {{else}}
-              TEvent
-              {{/if}}
-            >
-          | ActionFunction<
-              TContext,
-              {{#if this.events}}
-              Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
-              > extends undefined ? TEvent : Extract<TEvent,
-              {{#each this.events}}
-              | { type: '{{this}}' }
-              {{/each}}
-              >
-              {{else}}
-              TEvent
-              {{/if}}
-            >;
+            | ActionFunction<
+                TContext,
+                {{#if this.events}}
+                Extract<TEvent,
+                {{#each this.events}}
+                | { type: '{{this}}' }
+                {{/each}}
+                > extends undefined ? TEvent : Extract<TEvent,
+                {{#each this.events}}
+                | { type: '{{this}}' }
+                {{/each}}
+                >
+                {{else}}
+                TEvent
+                {{/if}}
+              >;
         {{/each}}
       };
       {{/if}}
