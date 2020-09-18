@@ -62,19 +62,99 @@ const makeSubStateFromNode = (
   };
 };
 
+class ItemMap {
+  /**
+   * The internal map that we use to keep track
+   * of all of the items
+   */
+  private map: {
+    [name: string]: { events: Set<string>; states: Set<XState.StateValue> };
+  } = {};
+  /**
+   * Check if one of these items is optional -
+   * passed in from above via a prop
+   */
+  private checkIfOptional: (name: string) => boolean;
+
+  constructor(props: { checkIfOptional: (name: string) => boolean }) {
+    this.checkIfOptional = props.checkIfOptional;
+  }
+
+  /**
+   * Add an item to the cache, along with the path of the node
+   * it occurs on
+   */
+  addItem(itemName: string, nodePath: string[]) {
+    if (!this.map[itemName]) {
+      this.map[itemName] = {
+        events: new Set(),
+        states: new Set(),
+      };
+    }
+    this.map[itemName].states.add(pathToStateValue(nodePath));
+  }
+
+  /**
+   * Add a triggering event to an item in the cache, for
+   * instance the event type which triggers a guard/action/service
+   */
+  addEventToItem(itemName: string, eventType: string, nodePath: string[]) {
+    this.addItem(itemName, nodePath);
+    this.map[itemName].events.add(eventType);
+  }
+
+  /**
+   * Transform the data into the shape required for index.d.ts
+   */
+  toDataShape() {
+    let isRequiredInTotal = false;
+    const lines = Object.entries(this.map)
+      .filter(([name]) => {
+        return !/\./.test(name);
+      })
+      .map(([name, data]) => {
+        const optional = this.checkIfOptional(name);
+        if (!optional) {
+          isRequiredInTotal = true;
+        }
+        return {
+          name,
+          required: !optional,
+          events: Array.from(data.events).filter(Boolean),
+          states: Array.from(data.states)
+            .map((state) => JSON.stringify(state))
+            .filter(Boolean),
+        };
+      });
+    return {
+      lines,
+      required: isRequiredInTotal,
+    };
+  }
+}
+
 const xstateRegex = /^xstate\./;
 
 export const introspectMachine = (machine: XState.StateNode) => {
-  const actionMaps: { [name: string]: Set<string> } = {};
-  const condMaps: { [name: string]: Set<string> } = {};
-  const servicesMaps: { [name: string]: Set<string> } = {};
+  const guards = new ItemMap({
+    checkIfOptional: (name) => Boolean(machine.options.guards[name]),
+  });
+  const actions = new ItemMap({
+    checkIfOptional: (name) => Boolean(machine.options.actions[name]),
+  });
+  const services = new ItemMap({
+    checkIfOptional: (name) => Boolean(machine.options.services[name]),
+  });
+  const activities = new ItemMap({
+    checkIfOptional: (name) => Boolean(machine.options.activities[name]),
+  });
+
   const nodeMaps: {
     [id: string]: {
       sources: Set<string>;
       children: Set<string>;
     };
   } = {};
-  let activityEntries: string[] = [];
 
   const allStateNodes = machine.stateIds.map((id) =>
     machine.getStateNodeById(id),
@@ -97,15 +177,13 @@ export const introspectMachine = (machine: XState.StateNode) => {
     node.activities?.forEach((activity) => {
       if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== 'xstate.invoke') {
-        activityEntries.push(activity.type);
+        activities.addItem(activity.type, node.path);
       }
     });
 
     node.invoke?.forEach((service) => {
       if (typeof service.src !== 'string' || /\./.test(service.src)) return;
-      if (!servicesMaps[service.src]) {
-        servicesMaps[service.src] = new Set();
-      }
+      services.addItem(service.src, node.path);
     });
 
     node.transitions?.forEach((transition) => {
@@ -116,10 +194,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
       );
       if (transition.cond && transition.cond.name) {
         if (transition.cond.name !== 'cond') {
-          if (!condMaps[transition.cond.name]) {
-            condMaps[transition.cond.name] = new Set();
-          }
-          condMaps[transition.cond.name].add(transition.eventType);
+          guards.addEventToItem(
+            transition.cond.name,
+            transition.eventType,
+            node.path,
+          );
         }
       }
 
@@ -129,10 +208,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
           targetNode.invoke?.forEach((service) => {
             if (typeof service.src !== 'string' || /\./.test(service.src))
               return;
-            if (!servicesMaps[service.src]) {
-              servicesMaps[service.src] = new Set();
-            }
-            servicesMaps[service.src].add(transition.eventType);
+            services.addEventToItem(
+              service.src,
+              transition.eventType,
+              node.path,
+            );
           });
         },
       );
@@ -140,10 +220,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
       if (transition.actions) {
         transition.actions?.forEach((action) => {
           if (!xstateRegex.test(action.type)) {
-            if (!actionMaps[action.type]) {
-              actionMaps[action.type] = new Set();
-            }
-            actionMaps[action.type].add(transition.eventType);
+            services.addEventToItem(
+              action.type,
+              transition.eventType,
+              node.path,
+            );
           }
           return {
             name: action.type,
@@ -161,92 +242,25 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
     allActions?.forEach((action) => {
       if (xstateRegex.test(action.type) || action.exec) return;
-      if (!actionMaps[action.type]) {
-        actionMaps[action.type] = new Set();
-      }
+      actions.addItem(action.type, node.path);
     });
 
     node.onEntry?.forEach((action) => {
       const sources = nodeMaps[node.id].sources;
       sources?.forEach((source) => {
-        if (!actionMaps[action.type]) {
-          /* istanbul ignore next */
-          actionMaps[action.type] = new Set();
-        }
-        actionMaps[action.type].add(source);
+        actions.addEventToItem(action.type, source, node.path);
       });
     });
   });
 
-  const activityLines = Array.from(activityEntries).map((activity) => ({
-    name: activity,
-    required: !machine.options.activities[activity],
-  }));
-
-  const condLines = Object.entries(condMaps)
-    .filter(([name]) => {
-      return !/\./.test(name);
-    })
-    .map(([name, eventSet]) => {
-      return {
-        name,
-        events: Array.from(eventSet).filter(Boolean),
-        required: !machine.options.guards[name],
-      };
-    });
-
-  const actionLines = Object.entries(actionMaps)
-    .filter(([name]) => {
-      return !/\./.test(name);
-    })
-    .map(([name, eventSet]) => {
-      return {
-        name,
-        events: Array.from(eventSet).filter(Boolean),
-        required: !machine.options.actions[name],
-      };
-    });
-
-  const serviceLines = Object.entries(servicesMaps)
-    .filter(([name]) => {
-      return !/\./.test(name);
-    })
-    .map(([name, serviceSet]) => {
-      return {
-        name,
-        events: Array.from(serviceSet).filter(Boolean),
-        required: !machine.options.services[name],
-      };
-    });
-
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
-
-  const guards = {
-    required: condLines.some((item) => item.required),
-    lines: condLines,
-  };
-
-  const actions = {
-    required: actionLines.some((item) => item.required),
-    lines: actionLines,
-  };
-
-  const services = {
-    required: serviceLines.some((item) => item.required),
-    lines: serviceLines,
-  };
-
-  const activities = {
-    required: activityLines.some((item) => item.required),
-    lines: activityLines,
-  };
 
   return {
     stateMatches: getMatchesStates(machine),
     subState,
-    guards,
-    actions,
-    services,
-    activities,
+    guards: guards.toDataShape(),
+    actions: actions.toDataShape(),
+    services: services.toDataShape(),
+    activities: activities.toDataShape(),
   };
 };
