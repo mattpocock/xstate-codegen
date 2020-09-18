@@ -74,7 +74,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       children: Set<string>;
     };
   } = {};
-  let activities: string[] = [];
+  let activityEntries: string[] = [];
 
   const allStateNodes = machine.stateIds.map((id) =>
     machine.getStateNodeById(id),
@@ -97,7 +97,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
     node.activities?.forEach((activity) => {
       if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== 'xstate.invoke') {
-        activities.push(activity.type);
+        activityEntries.push(activity.type);
       }
     });
 
@@ -178,6 +178,11 @@ export const introspectMachine = (machine: XState.StateNode) => {
     });
   });
 
+  const activityLines = Array.from(activityEntries).map((activity) => ({
+    name: activity,
+    required: !machine.options.activities[activity],
+  }));
+
   const condLines = Object.entries(condMaps)
     .filter(([name]) => {
       return !/\./.test(name);
@@ -216,25 +221,32 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
   const subState: SubState = makeSubStateFromNode(machine, machine, nodeMaps);
 
+  const guards = {
+    required: condLines.some((item) => item.required),
+    lines: condLines,
+  };
+
   const actions = {
-    actionsRequired: actionLines.some((item) => item.required),
+    required: actionLines.some((item) => item.required),
     lines: actionLines,
   };
 
   const services = {
-    servicesRequired: actionLines.some((item) => item.required),
+    required: serviceLines.some((item) => item.required),
     lines: serviceLines,
+  };
+
+  const activities = {
+    required: activityLines.some((item) => item.required),
+    lines: activityLines,
   };
 
   return {
     stateMatches: getMatchesStates(machine),
     subState,
-    condLines,
+    guards,
     actions,
     services,
-    activities: Array.from(activities).map((activity) => ({
-      name: activity,
-      required: !machine.options.activities[activity],
-    })),
+    activities,
   };
 };

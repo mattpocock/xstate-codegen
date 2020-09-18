@@ -13,36 +13,27 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'fetchMachine'>(
-  {
-    initial: 'idle',
-    states: {
-      idle: {
-        on: {
-          MAKE_FETCH: 'pending',
+const machine = Machine<Context, Event, 'fetchMachine'>({
+  initial: 'idle',
+  states: {
+    idle: {
+      on: {
+        MAKE_FETCH: 'pending',
+      },
+    },
+    pending: {
+      invoke: [
+        {
+          src: 'makeFetch',
+          onDone: 'success',
         },
-      },
-      pending: {
-        invoke: [
-          {
-            src: 'makeFetch',
-            onDone: 'success',
-          },
-        ],
-      },
-      success: {
-        entry: ['celebrate'],
-      },
+      ],
+    },
+    success: {
+      entry: ['celebrate'],
     },
   },
-  {
-    actions: {
-      celebrate: (context, event) => {
-        console.log(event.data);
-      },
-    },
-  },
-);
+});
 
 interpret(machine, {
   services: {
@@ -50,6 +41,11 @@ interpret(machine, {
       return Promise.resolve({
         yeah: true,
       });
+    },
+  },
+  actions: {
+    celebrate: (context, event) => {
+      console.log(event.data);
     },
   },
 });
