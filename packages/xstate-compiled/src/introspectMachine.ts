@@ -70,6 +70,7 @@ class ItemMap {
   private map: {
     [name: string]: { events: Set<string>; states: Set<XState.StateValue> };
   } = {};
+
   /**
    * Check if one of these items is optional -
    * passed in from above via a prop
