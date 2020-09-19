@@ -125,7 +125,7 @@ declare module '@xstate/compiled' {
           {{/if}},
           Extract<
             TEvent,
-            { type: 'done.invoke.{{this.name}}'}> extends { 'data': infer T } ? T : any
+            { type: 'done.invoke.{{this.name}}'} | { type: '{{this.name}}.onDone' }> extends { 'data': infer T } ? T : any
           > | StateMachine<any, any, any>
         {{/each}}
       };

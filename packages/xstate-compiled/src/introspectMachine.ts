@@ -62,6 +62,24 @@ const makeSubStateFromNode = (
   };
 };
 
+const eventNamesToReplace: {
+  regex: RegExp;
+  replacer: (text: string, regex: RegExp) => string;
+}[] = [
+  {
+    regex: /^done\.invoke\./,
+    replacer: (text, regex) => {
+      return text.replace(regex, '') + '.onDone';
+    },
+  },
+  {
+    regex: /^error\.platform\./,
+    replacer: (text, regex) => {
+      return text.replace(regex, '') + '.onError';
+    },
+  },
+];
+
 class ItemMap {
   /**
    * The internal map that we use to keep track
@@ -102,6 +120,15 @@ class ItemMap {
   addEventToItem(itemName: string, eventType: string, nodePath: string[]) {
     this.addItem(itemName, nodePath);
     this.map[itemName].events.add(eventType);
+    this.checkIfEventRequiresAlias(itemName, eventType);
+  }
+
+  checkIfEventRequiresAlias(itemName: string, eventType: string) {
+    eventNamesToReplace.forEach(({ regex, replacer }) => {
+      if (regex.test(eventType)) {
+        this.map[itemName].events.add(replacer(eventType, regex));
+      }
+    });
   }
 
   /**
