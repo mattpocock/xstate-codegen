@@ -1,4 +1,5 @@
 import { Machine, interpret } from '@xstate/compiled';
+import { useMachine } from '@xstate/compiled/react';
 
 type Data = {
   yeah: boolean;
@@ -44,12 +45,18 @@ const machine = Machine<Context, Event, 'fetchMachineOptionalActions'>(
   },
 );
 
-interpret(machine, {
-  services: {
-    makeFetch: () => {
-      return Promise.resolve({
-        yeah: true,
-      });
+const useOptions = () =>
+  useMachine(machine, {
+    actions: {
+      celebrate: (context, event) => {
+        console.log(event.data);
+      },
     },
-  },
-});
+    services: {
+      makeFetch: () => {
+        return Promise.resolve({
+          yeah: true,
+        });
+      },
+    },
+  });

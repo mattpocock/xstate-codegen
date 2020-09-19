@@ -1,4 +1,5 @@
 import { createMachine, interpret } from '@xstate/compiled';
+import { useMachine } from '@xstate/compiled/react';
 
 interface Context {}
 
@@ -50,17 +51,18 @@ const machine = createMachine<Context, Event, 'createMachineOptions'>(
   },
 );
 
-interpret(machine, {
-  actions: {
-    requiredAction: () => {},
-  },
-  services: {
-    requiredService: async () => {},
-  },
-  activities: {
-    requiredActivity: () => {},
-  },
-  guards: {
-    requiredCond: () => true,
-  },
-});
+const useOptions = () =>
+  useMachine(machine, {
+    actions: {
+      requiredAction: () => {},
+    },
+    services: {
+      requiredService: async () => {},
+    },
+    activities: {
+      requiredActivity: () => {},
+    },
+    guards: {
+      requiredCond: () => true,
+    },
+  });

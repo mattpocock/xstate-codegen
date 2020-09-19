@@ -35,17 +35,19 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
   },
 });
 
-interpret(machine, {
-  services: {
-    makeFetch: () => {
-      return Promise.resolve({
-        yeah: true,
-      });
+interpret(
+  machine.withConfig({
+    services: {
+      makeFetch: () => {
+        return Promise.resolve({
+          yeah: true,
+        });
+      },
     },
-  },
-  actions: {
-    celebrate: (context, event) => {
-      console.log(event.data);
+    actions: {
+      celebrate: (context, event) => {
+        console.log(event.data);
+      },
     },
-  },
-});
+  }),
+);

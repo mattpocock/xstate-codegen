@@ -268,10 +268,6 @@ declare module '@xstate/compiled' {
     Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   >(
     machine: Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>,
-    options: Extract<
-      RegisteredMachine<TContext, TEvent>,
-      { id: Id }
-    >['_options'],
   ): InterpreterWithMatches<TContext, TSchema, TEvent, Id>;
 
   export function Machine<
