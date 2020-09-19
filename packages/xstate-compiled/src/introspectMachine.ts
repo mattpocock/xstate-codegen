@@ -62,7 +62,11 @@ const makeSubStateFromNode = (
   };
 };
 
-const eventNamesToReplace: {
+/**
+ * This is a set of event names, and functions
+ * to add helpful aliases to them
+ */
+const eventNamesToAlias: {
   regex: RegExp;
   replacer: (text: string, regex: RegExp) => string;
 }[] = [
@@ -124,7 +128,7 @@ class ItemMap {
   }
 
   checkIfEventRequiresAlias(itemName: string, eventType: string) {
-    eventNamesToReplace.forEach(({ regex, replacer }) => {
+    eventNamesToAlias.forEach(({ regex, replacer }) => {
       if (regex.test(eventType)) {
         this.map[itemName].events.add(replacer(eventType, regex));
       }
