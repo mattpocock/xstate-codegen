@@ -14,7 +14,7 @@ The codebase follows a relatively simple set of steps to generate output that is
 
 #### `sibling-files-with-react-export`
 
-This watches for machines and does things. TODO: flesh this out
+This watches for machines and adds exports for use in React (like the useMachine hook).
 
 #### `xstate-compiled`
 
