@@ -20,6 +20,7 @@ import {
   assign,
   send,
   Expr,
+  InterpreterOptions,
 } from 'xstate';
 import {
   StateWithMatches,
@@ -268,6 +269,7 @@ declare module '@xstate/compiled' {
     Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   >(
     machine: Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>,
+    options?: Partial<InterpreterOptions>
   ): InterpreterWithMatches<TContext, TSchema, TEvent, Id>;
 
   export function Machine<
