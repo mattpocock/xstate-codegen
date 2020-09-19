@@ -140,6 +140,13 @@ declare module '@xstate/compiled' {
       devTools?: boolean;
     };
     _subState: {{{this.machine.subState}}};
+    withConfig(
+      options: TwoLevelPartial<{{capitalize this.id}}StateMachine<
+        TContext,
+        TEvent,
+        '{{ this.id }}'
+      >['_options']>
+    ): this;
   }
   {{/each}}
 
