@@ -62,6 +62,7 @@ gaze(pattern, {}, async function(err, watcher) {
   }
 
   printJsFiles();
+  printToFile(fileCache, objectArgs.outDir);
   console.clear();
 
   const addToCache = async (filePath: string) => {
