@@ -65,7 +65,14 @@ gaze(pattern, {}, async function(err, watcher) {
   console.clear();
 
   const addToCache = async (filePath: string) => {
-    const code = fs.readFileSync(filePath, 'utf8');
+    let code: string = '';
+    try {
+      code = fs.readFileSync(filePath, 'utf8');
+    } catch (e) {}
+    if (!code) {
+      console.log(`Could not read from path ${filePath}`);
+      return;
+    }
     if (!code.includes('@xstate/compiled')) {
       return;
     }
