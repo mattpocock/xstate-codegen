@@ -1,9 +1,5 @@
 # Contributing
 
-## Prerequisites
-
-Install `ts-node` by running `npm install -g ts-node` or `yarn global add ts-node`
-
 ## Basic Outline
 
 The codebase follows a relatively simple set of steps to generate output that is used by consumers of the library. The state machines are extracted from the user's code by watching a given set of files, the state machines in those files are extracted and introspected, and the types are generated using handlebar templates and and placed into the output directory.
@@ -11,10 +7,6 @@ The codebase follows a relatively simple set of steps to generate output that is
 ## Code Structure
 
 ### Packages
-
-#### `sibling-files-with-react-export`
-
-This watches for machines and adds exports for use in React (like the useMachine hook).
 
 #### `xstate-compiled`
 

@@ -15,5 +15,8 @@
   ],
   "scripts": {
     "x": "yarn workspace xstate-codegen"
+  },
+  "devDependencies": {
+    "ts-node":"9.0.0"
   }
 }
