@@ -2,4 +2,4 @@
 'xstate-codegen': patch
 ---
 
-Removed the second argument from interpret from the types
+Fixed a bug where it appeared that the interpret function required two arguments.
