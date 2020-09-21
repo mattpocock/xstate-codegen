@@ -221,7 +221,7 @@ export const introspectMachine = (machine: XState.StateNode) => {
       if (transition.actions) {
         transition.actions?.forEach((action) => {
           if (!xstateRegex.test(action.type)) {
-            services.addEventToItem(
+            actions.addEventToItem(
               action.type,
               transition.eventType,
               node.path,
