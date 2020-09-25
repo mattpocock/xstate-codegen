@@ -1,5 +1,16 @@
 # xstate-codegen
 
+## 0.2.0
+
+### Minor Changes
+
+- febc994: Configuration properties such as actions, services, etc are now only required if there are entries missing from the base machine config
+
+### Patch Changes
+
+- 65dfea4: Fixed withConfig so that it's strongly typed to the options the machine requires.
+- e1b25e2: Fixed a bug where the second argument of interpret was being typed incorrectly.
+
 ## 0.1.3
 
 ### Patch Changes
