@@ -1,6 +1,8 @@
 ## Type Safe State Machines
 
-`xstate-codegen` gives you 100% type-safe usage of XState in Typescript. You get type safety on:
+`xstate-codegen` gives you 100% type-safe usage of XState in Typescript. [Try it out at this codesandbox!](https://codesandbox.io/s/xstate-codegen-example-7etw2?file=/src/demo.machine.ts)
+
+You get type safety on:
 
 - Transition targets: `on: {EVENT: 'deep.nested.state'}`
 - Services
@@ -44,6 +46,28 @@ interface Context {}
 type Event = { type: 'DUMMY_TYPE' };
 
 const machine = Machine<Context, Event, 'uniqueId'>({});
+```
+
+### Usage with React
+
+```ts
+import { useMachine } from '@xstate/compiled/react';
+import { machine } from './myMachine.machine';
+
+const [state, dispatch] = useMachine(machine, {
+  // all options in here will be type checked
+});
+```
+
+### Usage with Interpret
+
+```ts
+import { interpret } from '@xstate/compiled';
+import { machine } from './myMachine.machine';
+
+const service = interpret(machine).withConfig({
+  // all options in here will be type checked
+});
 ```
 
 ## Options

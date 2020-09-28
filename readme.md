@@ -52,22 +52,22 @@ const machine = Machine<Context, Event, 'uniqueId'>({});
 
 ```ts
 import { useMachine } from '@xstate/compiled/react';
-import { machine } from './myMachine.machine'
+import { machine } from './myMachine.machine';
 
 const [state, dispatch] = useMachine(machine, {
   // all options in here will be type checked
-})
+});
 ```
 
 ### Usage with Interpret
 
 ```ts
 import { interpret } from '@xstate/compiled';
-import { machine } from './myMachine.machine'
+import { machine } from './myMachine.machine';
 
-const service = interpret(machine, {
+const service = interpret(machine).withConfig({
   // all options in here will be type checked
-})
+});
 ```
 
 ## Options
