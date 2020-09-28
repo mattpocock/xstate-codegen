@@ -38,7 +38,6 @@ type ReferencePathsByImportName = Record<
   Array<babelCore.NodePath<babelCore.types.Node>>
 >;
 
-const cwd = process.cwd();
 const extensions = ['.tsx', '.ts', '.jsx', '.js'];
 
 const getImports = (
@@ -241,9 +240,13 @@ const getCreatedExports = (
   }
 };
 
-export const extractMachines = async (
-  filePath: string,
-): Promise<ExtractedMachine[]> => {
+export const extractMachines = async ({
+  cwd,
+  filePath,
+}: {
+  filePath: string;
+  cwd: string;
+}): Promise<ExtractedMachine[]> => {
   const resolvedFilePath = path.resolve(cwd, filePath);
 
   const build = await rollup({

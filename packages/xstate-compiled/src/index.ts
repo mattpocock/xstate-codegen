@@ -31,7 +31,9 @@ if (!pattern) {
   process.exit(1);
 }
 
-const toRelative = (filePath: string) => path.relative(process.cwd(), filePath);
+const cwd = objectArgs.cwd || process.cwd();
+
+const toRelative = (filePath: string) => path.relative(cwd, filePath);
 
 const typedSuffix = /\.typed\.(js|ts|tsx|jsx)$/;
 
@@ -42,7 +44,13 @@ let fileCache: Record<
   ReturnType<typeof introspectMachine> & { id: string }
 > = {};
 
-gaze(pattern, {}, async function(err, watcher) {
+type GazeOptions = Parameters<typeof gaze>[1];
+
+const gazeOptions: GazeOptions = {
+  cwd,
+};
+
+gaze(pattern, gazeOptions, async function(err, watcher) {
   if (err) {
     console.log(err);
     process.exit(1);
@@ -61,7 +69,7 @@ gaze(pattern, {}, async function(err, watcher) {
     process.exit(1);
   }
 
-  printJsFiles();
+  printJsFiles(cwd);
   console.clear();
 
   const addToCache = async (filePath: string) => {
@@ -76,7 +84,7 @@ gaze(pattern, {}, async function(err, watcher) {
     if (!code.includes('@xstate/compiled')) {
       return;
     }
-    const machines = await extractMachines(filePath);
+    const machines = await extractMachines({ cwd, filePath });
     if (machines.length === 0) {
       return;
     }
@@ -100,7 +108,7 @@ gaze(pattern, {}, async function(err, watcher) {
     }
   }, Promise.resolve());
 
-  printToFile(fileCache, objectArgs.outDir);
+  printToFile({ cache: fileCache, cwd, outDir: objectArgs.outDir });
 
   if (objectArgs.once) {
     console.log('Completed!'.green.bold);
@@ -113,20 +121,20 @@ gaze(pattern, {}, async function(err, watcher) {
   this.on('changed', async (filePath) => {
     console.log(`File Changed: `.cyan.bold + toRelative(filePath).gray);
     await addToCache(filePath);
-    printToFile(fileCache, objectArgs.outDir);
+    printToFile({ cache: fileCache, cwd, outDir: objectArgs.outDir });
   });
   // @ts-ignore
   this.on('added', async (filePath) => {
     console.log(`File Added: `.green.bold + toRelative(filePath).gray);
     await addToCache(filePath);
-    printToFile(fileCache, objectArgs.outDir);
+    printToFile({ cache: fileCache, cwd, outDir: objectArgs.outDir });
   });
 
   // @ts-ignore
   this.on('deleted', async (filePath) => {
     console.log(`File Deleted: `.red.bold + toRelative(filePath).gray);
     delete fileCache[filePath];
-    printToFile(fileCache, objectArgs.outDir);
+    printToFile({ cache: fileCache, cwd, outDir: objectArgs.outDir });
   });
 
   console.log(`Watching for file changes in: `.cyan.bold + pattern.gray);

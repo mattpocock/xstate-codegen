@@ -69,8 +69,10 @@ export const getDeclarationFileTexts = (
   };
 };
 
-export const getNodeModulesDir = () => {
-  const packageJson = pkgUp.sync();
+export const getNodeModulesDir = (cwd: string) => {
+  const packageJson = pkgUp.sync({
+    cwd,
+  });
 
   if (!packageJson) {
     throw new Error(
@@ -83,29 +85,34 @@ export const getNodeModulesDir = () => {
   return targetDir;
 };
 
-export const printToFile = (
-  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>,
-  outDir?: string,
-) => {
+export const printToFile = ({
+  cache,
+  outDir,
+  cwd,
+}: {
+  cache: Record<string, ReturnType<typeof introspectMachine> & { id: string }>;
+  outDir?: string;
+  cwd: string;
+}) => {
   const files = getDeclarationFileTexts(cache);
-  const nodeModulesDir = getNodeModulesDir();
+  const nodeModulesDir = getNodeModulesDir(cwd);
   const targetDir = path.resolve(nodeModulesDir, '@xstate/compiled');
 
   /** Delete @xstate/compiled directory so that it triggers VSCode to re-check it */
   rimraf.sync(path.join(targetDir, '*.d.ts'));
 
-  printJsFiles();
+  printJsFiles(cwd);
   ensureMultipleFoldersExist(nodeModulesDir, ['@xstate', 'compiled']);
 
   fs.writeFileSync(
     outDir
-      ? path.resolve(process.cwd(), outDir, 'index.d.ts')
+      ? path.resolve(cwd, outDir, 'index.d.ts')
       : path.join(targetDir, 'index.d.ts'),
     files['index.d.ts'],
   );
   fs.writeFileSync(
     outDir
-      ? path.resolve(process.cwd(), outDir, 'react.d.ts')
+      ? path.resolve(cwd, outDir, 'react.d.ts')
       : path.join(targetDir, 'react.d.ts'),
     files['react.d.ts'],
   );
@@ -123,8 +130,8 @@ export const printToFile = (
  * of rollup looking at the code to ensure there is a module for rollup
  * to statically analyse
  */
-export const printJsFiles = () => {
-  const nodeModulesDir = getNodeModulesDir();
+export const printJsFiles = (cwd: string) => {
+  const nodeModulesDir = getNodeModulesDir(cwd);
   const targetDir = path.resolve(nodeModulesDir, '@xstate/compiled');
 
   ensureMultipleFoldersExist(nodeModulesDir, ['@xstate', 'compiled']);
