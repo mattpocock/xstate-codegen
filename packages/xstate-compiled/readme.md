@@ -85,3 +85,9 @@ By default, the CLI watches for changes in your files. Running `--once` runs the
 By default, the CLI adds the required declaration files inside node_modules at `node_modules/@xstate/compiled`. This writes the declaration files to a specified directory.
 
 > Note, this only writes the declaration files to the directory. The `.js` files still get written to `node_modules/@xstate/compiled`.
+
+### cwd
+
+`xstate-codegen "src/**/**.machine.ts" --cwd ../`
+
+Change the working directory that xstate-codegen operates in. This can sometimes be useful for altering which node_modules folder you'd like to target.
