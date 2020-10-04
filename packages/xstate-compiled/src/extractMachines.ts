@@ -259,6 +259,7 @@ export const extractMachines = async (
         plugins: [
           '@babel/plugin-transform-typescript',
           '@babel/plugin-proposal-optional-chaining',
+          '@babel/plugin-proposal-nullish-coalescing-operator',
           (babel: typeof babelCore) => {
             return {
               name: 'xstate-codegen-machines-extractor',
