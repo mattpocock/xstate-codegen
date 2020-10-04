@@ -2,4 +2,4 @@
 'xstate-codegen': patch
 ---
 
-Enable nullish coalesce Babel plugin
+Fix a bug where the nullish coalescing operator could not be used in targeted files
