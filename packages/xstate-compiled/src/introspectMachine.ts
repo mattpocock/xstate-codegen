@@ -149,6 +149,9 @@ export const introspectMachine = (machine: XState.StateNode) => {
   const activities = new ItemMap({
     checkIfOptional: (name) => Boolean(machine.options.activities[name]),
   });
+  const delays = new ItemMap({
+    checkIfOptional: (name) => Boolean(machine.options.delays[name]),
+  });
 
   const nodeMaps: {
     [id: string]: {
@@ -179,6 +182,12 @@ export const introspectMachine = (machine: XState.StateNode) => {
       if (/\./.test(activity.type)) return;
       if (activity.type && activity.type !== 'xstate.invoke') {
         activities.addItem(activity.type, node.path);
+      }
+    });
+
+    node.after?.forEach(({ delay }) => {
+      if (typeof delay === 'string') {
+        delays.addItem(delay, node.path);
       }
     });
 
@@ -263,5 +272,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
     actions: actions.toDataShape(),
     services: services.toDataShape(),
     activities: activities.toDataShape(),
+    delays: delays.toDataShape(),
   };
 };
