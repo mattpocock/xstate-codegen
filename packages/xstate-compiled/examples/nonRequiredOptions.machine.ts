@@ -44,4 +44,4 @@ const machine = Machine<Context, Event, 'nonRequiredOptionsMachine'>(
   },
 );
 
-interpret(machine, {});
+interpret(machine);

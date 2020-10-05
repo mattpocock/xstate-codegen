@@ -1,6 +1,8 @@
 ## Type Safe State Machines
 
-`xstate-codegen` gives you 100% type-safe usage of XState in Typescript. You get type safety on:
+`xstate-codegen` gives you 100% type-safe usage of XState in Typescript. [Try it out at this codesandbox!](https://codesandbox.io/s/xstate-codegen-example-7etw2?file=/src/demo.machine.ts)
+
+You get type safety on:
 
 - Transition targets: `on: {EVENT: 'deep.nested.state'}`
 - Services

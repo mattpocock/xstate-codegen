@@ -20,6 +20,7 @@ import {
   assign,
   send,
   Expr,
+  InterpreterOptions,
 } from 'xstate';
 import {
   StateWithMatches,
@@ -140,6 +141,13 @@ declare module '@xstate/compiled' {
       devTools?: boolean;
     };
     _subState: {{{this.machine.subState}}};
+    withConfig(
+      options: TwoLevelPartial<{{capitalize this.id}}StateMachine<
+        TContext,
+        TEvent,
+        '{{ this.id }}'
+      >['_options']>
+    ): this;
   }
   {{/each}}
 
@@ -261,10 +269,7 @@ declare module '@xstate/compiled' {
     Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   >(
     machine: Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>,
-    options: Extract<
-      RegisteredMachine<TContext, TEvent>,
-      { id: Id }
-    >['_options'],
+    options?: Partial<InterpreterOptions>
   ): InterpreterWithMatches<TContext, TSchema, TEvent, Id>;
 
   export function Machine<
