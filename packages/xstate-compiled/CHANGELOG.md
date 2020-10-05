@@ -1,5 +1,12 @@
 # xstate-codegen
 
+## 0.2.1
+
+### Patch Changes
+
+- c160dd4: Fix a bug where the nullish coalescing operator could not be used in targeted files
+- 5096139: Support delay configuration in machine options
+
 ## 0.2.0
 
 ### Minor Changes
