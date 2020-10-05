@@ -31,8 +31,13 @@ const machine = Machine<Context, Event, 'optionsMachine'>(
             src: 'nonRequiredService',
           },
         ],
+        after: {
+          NON_REQUIRED_DELAY: 'next',
+          REQUIRED_DELAY: { target: 'next', cond: 'delayedCond' },
+        },
         activities: ['requiredActivity', 'nonRequiredActivity'],
       },
+      next: {},
     },
   },
   {
@@ -47,6 +52,9 @@ const machine = Machine<Context, Event, 'optionsMachine'>(
     },
     guards: {
       nonRequiredCond: () => false,
+    },
+    delays: {
+      NON_REQUIRED_DELAY: 100,
     },
   },
 );
@@ -64,5 +72,9 @@ const useOptions = () =>
     },
     guards: {
       requiredCond: () => true,
+      delayedCond: () => true,
+    },
+    delays: {
+      REQUIRED_DELAY: 200,
     },
   });

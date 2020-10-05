@@ -6,6 +6,7 @@ import {
   Actions,
   DoneEventObject,
   DelayedTransitions,
+  DelayConfig,
   Activity,
   Mapper,
   PropertyMapper,
@@ -135,6 +136,13 @@ declare module '@xstate/compiled' {
       activities{{#unless this.machine.activities.required}}?{{/unless}}: {
         {{#each this.machine.activities.lines}}    
         {{this.name}}{{#unless this.required}}?{{/unless}}: ActivityConfig<TContext, TEvent>;
+        {{/each}}
+      };
+      {{/if}}
+      {{#if this.machine.delays}}
+      delays{{#unless this.machine.delays.required}}?{{/unless}}: {
+        {{#each this.machine.delays.lines}}
+        {{this.name}}{{#unless this.required}}?{{/unless}}: DelayConfig<TContext, TEvent>;
         {{/each}}
       };
       {{/if}}
