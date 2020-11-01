@@ -58,7 +58,7 @@ gaze(pattern, {}, async function(err, watcher) {
 
   if (filteredFiles.length === 0) {
     console.log('No files found from that glob');
-    process.exit(1);
+    process.exit(0);
   }
 
   printJsFiles();
