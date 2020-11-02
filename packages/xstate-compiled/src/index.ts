@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import chokidar from 'chokidar';
-import allSettled from 'promise.allsettled';
 import fs from 'fs';
 import path from 'path';
 import minimist from 'minimist';
@@ -9,10 +8,8 @@ import { introspectMachine } from './introspectMachine';
 import { extractMachines } from './extractMachines';
 import { printToFile, printJsFiles } from './printToFile';
 
-const { _: arrayArgs, ...objectArgs } = minimist(process.argv.slice(2));
+const { _: patterns, ...objectArgs } = minimist(process.argv.slice(2));
 const onlyOnce = objectArgs.once;
-
-const [, , ...patterns] = process.argv;
 
 if (patterns.length === 0) {
   console.log(
