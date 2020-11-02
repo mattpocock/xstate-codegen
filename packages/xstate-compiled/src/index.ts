@@ -47,23 +47,30 @@ watcher.on('all', async (eventName, filePath) => {
   if (!isValidFile(filePath)) {
     return;
   }
+  let message = '';
   if (eventName === 'add') {
-    console.log(`Scanning File: `.cyan.bold + toRelative(filePath).gray);
+    message += `Scanning File: `.cyan.bold;
     await addToCache(filePath);
   }
   if (eventName === 'change') {
-    console.log(`File Changed: `.cyan.bold + toRelative(filePath).gray);
+    message += `File Changed: `.yellow.bold;
     await addToCache(filePath);
   }
   if (eventName === 'unlink') {
-    console.log(`File Deleted: `.red.bold + toRelative(filePath).gray);
+    message += `File Deleted: `.red.bold;
     removeFromCache(filePath);
+  }
+  if (message) {
+    console.log(`${message} ${toRelative(filePath).gray}`);
   }
   printToFile(fileCache, objectArgs.outDir);
 });
 
 process.on('exit', () => {
-  console.log('Completed!'.green.bold);
+  if (onlyOnce) {
+    // little trick because `ready` doesn't work well to know the inital run is complete
+    console.log('Completed!'.green.bold);
+  }
 });
 
 watcher.on('ready', async () => {
