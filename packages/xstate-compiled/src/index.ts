@@ -30,7 +30,9 @@ const fileCache: Record<
 > = {};
 
 printJsFiles();
-console.clear();
+if (!onlyOnce) {
+  console.clear();
+}
 
 const watcher = chokidar.watch(patterns, {
   persistent: !onlyOnce,
