@@ -236,6 +236,30 @@ export const introspectMachine = (machine: XState.StateNode) => {
               node.path,
             );
           }
+          if (action.type === 'xstate.choose' && Array.isArray(action.conds)) {
+            action.conds.forEach(({ cond, actions: condActions }) => {
+              if (typeof cond === 'string') {
+                guards.addEventToItem(cond, transition.eventType, node.path);
+              }
+              if (Array.isArray(condActions)) {
+                condActions.forEach((condAction) => {
+                  if (typeof condAction === 'string') {
+                    actions.addEventToItem(
+                      condAction,
+                      transition.eventType,
+                      node.path,
+                    );
+                  }
+                });
+              } else if (typeof condActions === 'string') {
+                actions.addEventToItem(
+                  condActions,
+                  transition.eventType,
+                  node.path,
+                );
+              }
+            });
+          }
           return {
             name: action.type,
             event: transition.eventType,
