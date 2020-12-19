@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import gaze from 'gaze';
+import chokidar from 'chokidar';
 import fs from 'fs';
 import path from 'path';
 import minimist from 'minimist';
@@ -8,126 +8,100 @@ import { introspectMachine } from './introspectMachine';
 import { extractMachines } from './extractMachines';
 import { printToFile, printJsFiles } from './printToFile';
 
-const { _: arrayArgs, ...objectArgs } = minimist(process.argv.slice(2));
+const { _: patterns, ...objectArgs } = minimist(process.argv.slice(2));
+const onlyOnce = objectArgs.once;
 
-const [, , pattern] = process.argv;
-
-type RecordOfArrays = Record<string, string[]>;
-
-const flattenRecords = (
-  filesAsRecord: Record<string, RecordOfArrays | string[]> | string[],
-): string[] => {
-  if (Array.isArray(filesAsRecord)) {
-    return filesAsRecord;
-  }
-  return Object.values(filesAsRecord).reduce(
-    (array, paths) => array.concat(flattenRecords(paths)),
-    [] as any,
-  ) as string[];
-};
-
-if (!pattern) {
-  console.log('You must pass a glob, for instance "**/src/**.machine.ts"');
+if (patterns.length === 0) {
+  console.log(
+    'You must pass at least one glob, for instance "**/src/**.machine.ts"',
+  );
   process.exit(1);
 }
 
-const toRelative = (filePath: string) => path.relative(process.cwd(), filePath);
-
 const typedSuffix = /\.typed\.(js|ts|tsx|jsx)$/;
-
 const tsExtension = /\.(ts|tsx|js|jsx)$/;
+function isValidFile(filePath: string) {
+  return !typedSuffix.test(filePath) && tsExtension.test(filePath);
+}
 
-let fileCache: Record<
+const fileCache: Record<
   string,
   ReturnType<typeof introspectMachine> & { id: string }
 > = {};
 
-gaze(pattern, {}, async function(err, watcher) {
-  if (err) {
-    console.log(err);
-    process.exit(1);
-  }
-
-  const filesAsRecord: Record<string, string[]> = watcher.watched() as any;
-
-  const files = flattenRecords(filesAsRecord);
-
-  const filteredFiles = files.filter((filePath) => {
-    return !typedSuffix.test(filePath) && tsExtension.test(filePath);
-  });
-
-  if (filteredFiles.length === 0) {
-    console.log('No files found from that glob');
-    process.exit(1);
-  }
-
-  printJsFiles();
+printJsFiles();
+if (!onlyOnce) {
   console.clear();
+}
 
-  const addToCache = async (filePath: string) => {
-    let code: string = '';
-    try {
-      code = fs.readFileSync(filePath, 'utf8');
-    } catch (e) {}
-    if (!code) {
-      console.log(`Could not read from path ${filePath}`);
-      return;
-    }
-    if (!code.includes('@xstate/compiled')) {
-      return;
-    }
-    const machines = await extractMachines(filePath);
-    if (machines.length === 0) {
-      return;
-    }
-    const { machine, id } = machines[0];
-    fileCache[filePath] = { ...introspectMachine(machine), id };
-  };
-
-  await filteredFiles.reduce(async (promise, filePath) => {
-    await promise;
-    try {
-      console.log(`Scanning File: `.cyan.bold + toRelative(filePath).gray);
-      await addToCache(filePath);
-    } catch (e) {
-      console.log(e);
-      if (objectArgs.once) {
-        console.log('Could not complete due to errors'.red.bold);
-        // @ts-ignore
-        this.close();
-        process.exit(1);
-      }
-    }
-  }, Promise.resolve());
-
-  printToFile(fileCache, objectArgs.outDir);
-
-  if (objectArgs.once) {
-    console.log('Completed!'.green.bold);
-    // @ts-ignore
-    this.close();
-    process.exit(0);
-  }
-
-  // @ts-ignore
-  this.on('changed', async (filePath) => {
-    console.log(`File Changed: `.cyan.bold + toRelative(filePath).gray);
-    await addToCache(filePath);
-    printToFile(fileCache, objectArgs.outDir);
-  });
-  // @ts-ignore
-  this.on('added', async (filePath) => {
-    console.log(`File Added: `.green.bold + toRelative(filePath).gray);
-    await addToCache(filePath);
-    printToFile(fileCache, objectArgs.outDir);
-  });
-
-  // @ts-ignore
-  this.on('deleted', async (filePath) => {
-    console.log(`File Deleted: `.red.bold + toRelative(filePath).gray);
-    delete fileCache[filePath];
-    printToFile(fileCache, objectArgs.outDir);
-  });
-
-  console.log(`Watching for file changes in: `.cyan.bold + pattern.gray);
+const watcher = chokidar.watch(patterns, {
+  persistent: !onlyOnce,
 });
+
+watcher.on('error', (err) => {
+  console.error(err);
+  process.exit(1);
+});
+
+const toRelative = (filePath: string) => path.relative(process.cwd(), filePath);
+
+watcher.on('all', async (eventName, filePath) => {
+  if (!isValidFile(filePath)) {
+    return;
+  }
+  let message = '';
+  if (eventName === 'add') {
+    message += `Scanning File: `.cyan.bold;
+    await addToCache(filePath);
+  }
+  if (eventName === 'change') {
+    message += `File Changed: `.yellow.bold;
+    await addToCache(filePath);
+  }
+  if (eventName === 'unlink') {
+    message += `File Deleted: `.red.bold;
+    removeFromCache(filePath);
+  }
+  if (message) {
+    console.log(`${message} ${toRelative(filePath).gray}`);
+  }
+  printToFile(fileCache, objectArgs.outDir);
+});
+
+process.on('exit', () => {
+  if (onlyOnce) {
+    // little trick because `ready` doesn't work well to know the inital run is complete
+    console.log('Completed!'.green.bold);
+  }
+});
+
+watcher.on('ready', async () => {
+  if (!onlyOnce) {
+    patterns.forEach((pattern) => {
+      console.log(`Watching for file changes in: `.cyan.bold + pattern);
+    });
+  }
+});
+
+async function addToCache(filePath: string) {
+  let code: string = '';
+  try {
+    code = fs.readFileSync(filePath, 'utf8');
+  } catch (e) {}
+  if (!code) {
+    throw new Error(`Could not read from path ${filePath}`);
+  }
+  if (!code.includes('@xstate/compiled')) {
+    return;
+  }
+  const machines = await extractMachines(filePath);
+  if (machines.length === 0) {
+    return;
+  }
+  const { machine, id } = machines[0];
+  fileCache[filePath] = { ...introspectMachine(machine), id };
+}
+
+function removeFromCache(filePath: string) {
+  delete fileCache[filePath];
+}
