@@ -1,5 +1,18 @@
 # xstate-codegen
 
+## 0.3.0
+
+### Minor Changes
+
+- 0fe4c14: Added support multiple for passing multiple input patterns.
+
+  Fixed a bug where new files added while watching would not be picked up.
+
+### Patch Changes
+
+- 0635d91: Added typings for actions.choose
+- 451deee: Added an es.js template to ensure that generated files work in ESM environments
+
 ## 0.2.1
 
 ### Patch Changes
