@@ -6,7 +6,7 @@ import path from 'path';
 import minimist from 'minimist';
 import { introspectMachine } from './introspectMachine';
 import { extractMachines } from './extractMachines';
-import { printToFile, printJsFiles } from './printToFile';
+import { printToFile, printJsFiles, getTargetDir } from './printToFile';
 
 const { _: patterns, ...objectArgs } = minimist(process.argv.slice(2));
 const onlyOnce = objectArgs.once;
@@ -104,4 +104,22 @@ async function addToCache(filePath: string) {
 
 function removeFromCache(filePath: string) {
   delete fileCache[filePath];
+}
+
+if (!onlyOnce) {
+  const start = () => {
+    const targetDirWatcher = chokidar.watch(`${getTargetDir()}/package.json`, {
+      persistent: true,
+      disableGlobbing: true,
+      ignoreInitial: true,
+    });
+    targetDirWatcher.on('unlink', () => {
+      printToFile(fileCache, objectArgs.outDir);
+      console.log('Generated files vanished, written again'.red.bold);
+      // need to restart, it won't work otherwise
+      targetDirWatcher.close();
+      start();
+    });
+  };
+  start();
 }
