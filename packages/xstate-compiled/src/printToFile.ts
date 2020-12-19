@@ -133,6 +133,10 @@ export const printJsFiles = () => {
     .readFileSync(path.resolve(__dirname, './templates/index.js.hbs'))
     .toString();
 
+  const indexEsTemplate = fs
+    .readFileSync(path.resolve(__dirname, './templates/index.es.js.hbs'))
+    .toString();
+
   const reactJsTemplate = fs
     .readFileSync(path.resolve(__dirname, './templates/react.js.hbs'))
     .toString();
@@ -142,6 +146,7 @@ export const printJsFiles = () => {
     .toString();
 
   fs.writeFileSync(path.join(targetDir, 'index.js'), indexJsTemplate);
+  fs.writeFileSync(path.join(targetDir, 'index.es.js'), indexEsTemplate);
   fs.writeFileSync(path.join(targetDir, 'react.js'), reactJsTemplate);
   fs.writeFileSync(path.join(targetDir, 'package.json'), packageJsonTemplate);
 };
