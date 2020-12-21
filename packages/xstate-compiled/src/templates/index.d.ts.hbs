@@ -157,6 +157,8 @@ declare module '@xstate/compiled' {
       >['_options']>
     ): this;
   }
+
+  export type {{capitalize this.id}}Interpreter<TContext, TEvent extends EventObject> = InterpreterWithMatches<TContext, {}, TEvent, '{{ this.id}}'>
   {{/each}}
 
   export interface RegisteredMachinesMap<TContext, TEvent extends EventObject> {

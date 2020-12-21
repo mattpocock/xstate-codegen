@@ -37,13 +37,47 @@ You must pass three type options to `createMachine/Machine`:
 For instance:
 
 ```ts
-import { Machine } from '@xstate/compiled';
+import { Machine, UniqueIdInterpreter } from '@xstate/compiled';
 
 interface Context {}
 
 type Event = { type: 'DUMMY_TYPE' };
 
-const machine = Machine<Context, Event, 'uniqueId'>({});
+const machine = Machine<Context, Event, 'uniqueId'>({
+    states: {
+        first: {}
+        second: {}
+    }
+});
+
+type UniqueIdService = UniqueIdInterpreter<Context, Event>
+```
+
+### React support
+
+For use with React you can import `useMachine` from `@xstate/compiled/react` instead for better type support.
+
+Namely the `state.matches()` will type check against state schema properly.
+
+```ts
+import { useMachine } from '@xstate/compiled/react';
+
+const [state, send, service] = useMachine(machine); // machine from previous example
+state.matches('first'); // correctly type checked
+state.matches('wrong'); // produces error
+```
+
+The `service` variable is useful to be passed to other components either through props or context.
+Notice in the first example how we have declared `UniqueIdService`. You can use that type in such cases.
+
+```ts
+import { useService } from '@xstate/compiled/react';
+
+function UniqueComponent({ service }: { service: UniqueIdService }) {
+  const [state] = useService(service);
+  state.matches('first'); // correctly type checked
+  state.matches('wrong'); // produces error
+}
 ```
 
 ## Options

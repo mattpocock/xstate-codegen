@@ -1,5 +1,5 @@
-import { Machine, interpret } from '@xstate/compiled';
-import { useMachine } from '@xstate/compiled/react';
+import { Machine, interpret, LightMachineInterpreter } from '@xstate/compiled';
+import { useMachine, useService } from '@xstate/compiled/react';
 
 type LightEvent =
   | { type: 'TIMER' }
@@ -94,4 +94,14 @@ const interpretTrafficLightMachine = () => {
     }),
   );
   return interpreter;
+};
+
+type LightMachineService = LightMachineInterpreter<LightContext, LightEvent>;
+
+const useTrafficLightService = (service: LightMachineService) => {
+  const [state, send] = useService(service);
+  state.matches('green');
+  // @ts-expect-error
+  state.matches('wrong');
+  return [state, send];
 };
