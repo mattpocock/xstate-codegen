@@ -221,7 +221,7 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.7.2":
+"@babel/runtime@^7.5.0", "@babel/runtime@^7.7.2":
   version "7.11.2"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.11.2.tgz#f549c13c754cc40b87644b9fa9f09a6a95fe0736"
   integrity sha512-TeWkU52so0mPtDcaCTxNBI/IHiz0pZgr8VEFqXFtZWpYD08ZB6FaSwVAS8MKRQAP3bYKiVjwysOJgMFY28o6Tw==
@@ -2997,6 +2997,13 @@ path-type@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-4.0.0.tgz#84ed01c0a7ba380afe09d90a8c180dcd9d03043b"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
+
+penv.macro@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/penv.macro/-/penv.macro-0.4.0.tgz#06e810a8234a07cb09f7a4c0819d8f88ec7d159a"
+  integrity sha512-rvqR3AreOAkii3ZPAiH+V4nNSk9W5bUAaT5+D9YK2dPzPmGZcFjuVyfBYmbkm979fR6gVoEfnvGMGTk4CFPskQ==
+  dependencies:
+    "@babel/runtime" "^7.5.0"
 
 picomatch@^2.0.4, picomatch@^2.0.5, picomatch@^2.2.1, picomatch@^2.2.2:
   version "2.2.2"

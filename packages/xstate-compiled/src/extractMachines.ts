@@ -257,6 +257,7 @@ export const extractMachines = async (
         babelHelpers: 'bundled',
         extensions,
         plugins: [
+          'babel-plugin-macros',
           '@babel/plugin-transform-typescript',
           '@babel/plugin-proposal-optional-chaining',
           '@babel/plugin-proposal-nullish-coalescing-operator',
