@@ -1,7 +1,7 @@
 import path from 'path';
-import { StateMachine, Machine } from 'xstate';
+import { StateMachine, createMachine } from 'xstate';
 import { Project, ts, Node } from 'ts-morph';
-import extractFromNode from './extractor';
+import { extractSchema, extractOptions } from './extractor';
 
 type ExtractedMachine = {
   id: string;
@@ -9,6 +9,36 @@ type ExtractedMachine = {
 };
 
 let projectCache = new Map<string, Project>();
+
+Array.prototype.flatMap = function(iteratee) {
+  return [].concat(...(this.map(iteratee) as any));
+};
+
+const getTsPropertyNameText = (propertyName: ts.PropertyName): string => {
+  if (
+    ts.isIdentifier(propertyName) ||
+    ts.isStringLiteral(propertyName) ||
+    ts.isNumericLiteral(propertyName)
+  ) {
+    return propertyName.text;
+  }
+
+  if (ts.isComputedPropertyName(propertyName)) {
+    throw new Error(
+      "Private identifiers can't be used as property names within config object.",
+    );
+  }
+
+  if (ts.isPrivateIdentifier(propertyName)) {
+    throw new Error(
+      "Private identifiers can't be used as property names within config object.",
+    );
+  }
+
+  // propertyName is already never here, but TS doesn't recognize that this explores all possibilities here
+  // we have to throw so it doesn't complain about the string return type
+  throw new Error('This should be unreachable.');
+};
 
 export const extractMachines = async (
   filePath: string,
@@ -25,7 +55,7 @@ export const extractMachines = async (
     isFreshProject = true;
     const cachedProject = new Project({
       tsConfigFilePath: configFileName,
-      addFilesFromTsConfig: false,
+      // addFilesFromTsConfig: false,
     });
     projectCache.set(configFileName, cachedProject);
   }
@@ -87,10 +117,39 @@ export const extractMachines = async (
     }
 
     const configNode = machineCall.getArguments()[0];
-    const config = extractFromNode(configNode);
+    if (Node.isObjectLiteralExpression(configNode)) {
+      configNode.transform((traversal) => {
+        if (traversal.currentNode === configNode.compilerNode) {
+          return traversal.visitChildren();
+        }
 
+        if (
+          ts.isPropertyAssignment(traversal.currentNode) &&
+          getTsPropertyNameText(traversal.currentNode.name) !== 'context' &&
+          (ts.isObjectLiteralExpression(traversal.currentNode.initializer) ||
+            ts.isArrayLiteralExpression(traversal.currentNode.initializer) ||
+            ts.isStringLiteral(traversal.currentNode.initializer))
+        ) {
+          return ts.updatePropertyAssignment(
+            traversal.currentNode,
+            traversal.currentNode.name,
+            ts.factory.createAsExpression(
+              traversal.currentNode.initializer,
+              ts.factory.createTypeReferenceNode(
+                ts.factory.createIdentifier('const'),
+                undefined,
+              ),
+            ),
+          );
+        }
+
+        return traversal.currentNode;
+      });
+    }
+
+    const stateSchema = extractSchema(configNode.getType());
     const optionsNode = machineCall.getArguments()[1];
-    const options = optionsNode && extractFromNode(optionsNode);
+    const options = optionsNode && extractOptions(optionsNode.getType());
 
     const secondTypeArg = machineCall.getTypeArguments()[2];
 
@@ -110,7 +169,7 @@ export const extractMachines = async (
 
     return {
       id: literal.getLiteralValue(),
-      machine: Machine(config as any, options as any),
+      machine: createMachine(stateSchema as any, options as any),
     };
   });
 };
