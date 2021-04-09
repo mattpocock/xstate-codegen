@@ -203,16 +203,8 @@ const Action = (): TypeExtractor => ({
 
     const symbol = type.getSymbol();
 
-    // is this a different case than the one comparing to undefined?
-    if (symbol === null) {
+    if (!symbol) {
       return [true, undefined];
-    }
-
-    if (symbol === undefined) {
-      // not ideal, this might be an inline action call (like `actions: assign()`)
-      // our types might not be generated during the initial run and thus we might not be able to obtain a type
-      // from such an import without types defs, we just return a function to imitate an inline function
-      return [false, () => {}, true];
     }
 
     if (
