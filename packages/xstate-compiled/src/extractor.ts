@@ -182,6 +182,15 @@ const string = (literals?: string[]): TypeExtractor => ({
     return [true, undefined];
   },
 });
+const number = (): TypeExtractor => ({
+  extract(type: Type | undefined) {
+    if (!type?.isNumber()) {
+      return [true, undefined];
+    }
+    // provide a dummy value since for numbers we don't need to extract literals right now
+    return [false, 10, true];
+  },
+});
 
 const func = (): TypeExtractor => ({
   extract(type: Type | undefined) {
@@ -283,6 +292,11 @@ const Options = optional(
     actions: optional(
       object({
         [indexer]: match([func(), Action()]),
+      }),
+    ),
+    delays: optional(
+      object({
+        [indexer]: match([func(), number()]),
       }),
     ),
     guards: optional(
