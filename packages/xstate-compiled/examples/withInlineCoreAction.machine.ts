@@ -1,4 +1,4 @@
-import { Machine, interpret, assign } from '@xstate/compiled';
+import { createMachine, interpret, assign } from '@xstate/compiled';
 
 type Data = {
   yeah: boolean;
@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'withInlineCoreAction'>({
+const machine = createMachine<Context, Event, 'withInlineCoreAction'>({
   initial: 'idle',
   states: {
     idle: {

@@ -1,8 +1,13 @@
-import { assign, Machine, send, StateWithMatches } from '@xstate/compiled';
+import {
+  assign,
+  createMachine,
+  send,
+  StateWithMatches,
+} from '@xstate/compiled';
 
 type GetDemoMatterportViewingSubscription = {};
 
-export const complexMachineMachine = Machine<
+export const complexMachineMachine = createMachine<
   ComplexMachineContext,
   ComplexMachineEvent,
   'complexMachine'

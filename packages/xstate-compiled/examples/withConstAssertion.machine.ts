@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine, interpret } from '@xstate/compiled';
 
 type Data = {
   yeah: boolean;
@@ -15,7 +15,7 @@ type Event =
 
 let target = '';
 
-const machine = Machine<Context, Event, 'withConstAssertion'>({
+const machine = createMachine<Context, Event, 'withConstAssertion'>({
   initial: 'idle',
   states: {
     idle: {
@@ -35,7 +35,7 @@ const machine = Machine<Context, Event, 'withConstAssertion'>({
   },
 });
 
-interpret(machine, {
+machine.withConfig({
   services: {
     makeFetch: () => {
       return Promise.resolve({

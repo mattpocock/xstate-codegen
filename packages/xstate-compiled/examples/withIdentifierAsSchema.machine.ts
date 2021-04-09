@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine, interpret } from '@xstate/compiled';
 
 type Data = {
   yeah: boolean;
@@ -33,9 +33,9 @@ const schema = {
   },
 } as const;
 
-const machine = Machine<Context, Event, 'withIdentifierAsSchema'>(schema);
+const machine = createMachine<Context, Event, 'withIdentifierAsSchema'>(schema);
 
-interpret(machine, {
+machine.withConfig({
   services: {
     makeFetch: () => {
       return Promise.resolve({

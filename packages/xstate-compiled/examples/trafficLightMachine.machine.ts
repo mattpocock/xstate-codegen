@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine, interpret } from '@xstate/compiled';
 import { useMachine } from '@xstate/compiled/react';
 
 type LightEvent =
@@ -10,7 +10,7 @@ interface LightContext {
   elapsed: number;
 }
 
-const lightMachine = Machine<LightContext, LightEvent, 'lightMachine'>({
+const lightMachine = createMachine<LightContext, LightEvent, 'lightMachine'>({
   initial: 'green',
   context: { elapsed: 0 },
   id: 'superMachine',

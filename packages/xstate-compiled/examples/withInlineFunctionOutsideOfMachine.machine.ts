@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine, interpret } from '@xstate/compiled';
 
 type Data = {
   yeah: boolean;
@@ -18,7 +18,11 @@ const notify = (
   event: { type: 'MAKE_FETCH'; params: { id: string } },
 ) => {};
 
-const machine = Machine<Context, Event, 'withInlineFunctionOutsideOfMachine'>({
+const machine = createMachine<
+  Context,
+  Event,
+  'withInlineFunctionOutsideOfMachine'
+>({
   initial: 'idle',
   states: {
     idle: {

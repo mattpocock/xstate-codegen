@@ -87,7 +87,7 @@ export const extractMachines = async (
     })
     .filter(
       (namedImport) =>
-        namedImport.getNameNode().compilerNode.text === 'Machine',
+        namedImport.getNameNode().compilerNode.text === 'createMachine',
     )
     .flatMap((namedImport) =>
       (

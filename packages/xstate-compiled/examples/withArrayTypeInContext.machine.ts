@@ -1,4 +1,4 @@
-import { Machine } from '@xstate/compiled';
+import { createMachine } from '@xstate/compiled';
 
 interface Context {
   attendeesToCreate: string[];
@@ -10,7 +10,7 @@ const initialContext: Context = {
   attendeesToCreate: [],
 };
 
-export const addViewingAttendeesMachine = Machine<
+export const addViewingAttendeesMachine = createMachine<
   Context,
   Event,
   'withArrayTypeInContext'
