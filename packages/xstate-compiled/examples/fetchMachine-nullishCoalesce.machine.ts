@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'fetchMachine'>({
+const machine = Machine<Context, Event, 'fetchMachineNullishCoalesce'>({
   initial: 'idle',
   states: {
     idle: {
@@ -35,12 +35,16 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
   },
 });
 
+const input: { test: boolean | null } = {
+  test: null,
+};
+
 interpret(
   machine.withConfig({
     services: {
       makeFetch: () => {
         return Promise.resolve({
-          yeah: true,
+          yeah: input?.test ?? true,
         });
       },
     },

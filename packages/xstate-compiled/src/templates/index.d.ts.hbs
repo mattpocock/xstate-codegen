@@ -6,6 +6,7 @@ import {
   Actions,
   DoneEventObject,
   DelayedTransitions,
+  DelayConfig,
   Activity,
   Mapper,
   PropertyMapper,
@@ -20,6 +21,7 @@ import {
   assign,
   send,
   Expr,
+  InterpreterOptions,
 } from 'xstate';
 import {
   StateWithMatches,
@@ -137,9 +139,23 @@ declare module '@xstate/compiled' {
         {{/each}}
       };
       {{/if}}
+      {{#if this.machine.delays}}
+      delays{{#unless this.machine.delays.required}}?{{/unless}}: {
+        {{#each this.machine.delays.lines}}
+        {{this.name}}{{#unless this.required}}?{{/unless}}: DelayConfig<TContext, TEvent>;
+        {{/each}}
+      };
+      {{/if}}
       devTools?: boolean;
     };
     _subState: {{{this.machine.subState}}};
+    withConfig(
+      options: TwoLevelPartial<{{capitalize this.id}}StateMachine<
+        TContext,
+        TEvent,
+        '{{ this.id }}'
+      >['_options']>
+    ): this;
   }
   {{/each}}
 
@@ -261,10 +277,7 @@ declare module '@xstate/compiled' {
     Id extends keyof RegisteredMachinesMap<TContext, TEvent>
   >(
     machine: Extract<RegisteredMachine<TContext, TEvent>, { id: Id }>,
-    options: Extract<
-      RegisteredMachine<TContext, TEvent>,
-      { id: Id }
-    >['_options'],
+    options?: Partial<InterpreterOptions>
   ): InterpreterWithMatches<TContext, TSchema, TEvent, Id>;
 
   export function Machine<

@@ -16,4 +16,4 @@ const machine = Machine<
   },
 });
 
-const service = interpret(machine, {});
+const service = interpret(machine);

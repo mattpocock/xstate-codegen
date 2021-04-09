@@ -9,7 +9,7 @@ execSync(
   `cd examples && ${
     // If in CI, use node. If in local development, use ts-node
     process.env.CI ? 'node ../bin/index.js' : 'ts-node -T ../src/index.ts'
-  } "*.machine.ts" --once`,
+  } "*.machine.ts" "*Machine.ts" --once`,
   {
     stdio: 'inherit',
   },

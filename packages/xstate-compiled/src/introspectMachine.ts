@@ -1,6 +1,6 @@
 import 'colors';
 import * as XState from 'xstate';
-import { toStateValue, toStatePaths, pathToStateValue } from 'xstate/lib/utils';
+import { toStatePaths, pathToStateValue } from 'xstate/lib/utils';
 import { getTransitionsFromNode } from './traversalUtils';
 
 export interface SubState {
@@ -8,16 +8,6 @@ export interface SubState {
   sources: string;
   states: Record<string, SubState>;
 }
-
-const toCompactArray = <T>(maybeArray: T | T[] | undefined): T[] => {
-  if (!maybeArray) {
-    return [];
-  }
-  if (Array.isArray(maybeArray)) {
-    return maybeArray;
-  }
-  return [maybeArray];
-};
 
 export const getMatchesStates = (machine: XState.StateNode) => {
   const allStateNodes = machine.stateIds.map((id) =>
@@ -35,6 +25,19 @@ export const getMatchesStates = (machine: XState.StateNode) => {
 
   return states;
 };
+
+const toCompactArray = <T>(maybeArray: T | T[] | undefined): T[] => {
+  if (!maybeArray) {
+    return [];
+  }
+  if (Array.isArray(maybeArray)) {
+    return maybeArray;
+  }
+  return [maybeArray];
+};
+
+const getStringActions = (_actions: any): string[] =>
+  toCompactArray(_actions).filter((action) => typeof action === 'string');
 
 const makeSubStateFromNode = (
   node: XState.StateNode,
@@ -144,6 +147,8 @@ class ItemMap {
   }
 }
 
+const xstateRegex = /^xstate\./;
+
 export const introspectMachine = (machine: XState.StateNode) => {
   const guards = new ItemMap({
     checkIfOptional: (name) => Boolean(machine.options.guards[name]),
@@ -156,6 +161,9 @@ export const introspectMachine = (machine: XState.StateNode) => {
   });
   const activities = new ItemMap({
     checkIfOptional: (name) => Boolean(machine.options.activities[name]),
+  });
+  const delays = new ItemMap({
+    checkIfOptional: (name) => Boolean(machine.options.delays[name]),
   });
 
   const nodeMaps: {
@@ -190,15 +198,27 @@ export const introspectMachine = (machine: XState.StateNode) => {
       }
     });
 
+    node.after?.forEach(({ delay }) => {
+      if (typeof delay === 'string') {
+        delays.addItem(delay, node.path);
+      }
+    });
+
     node.invoke?.forEach((service) => {
       if (typeof service.src !== 'string' || /\./.test(service.src)) return;
       services.addItem(service.src, node.path);
     });
 
-    const on = node.config.on || {};
-
-    if (!Array.isArray(on)) {
-      Object.entries(on).forEach(([eventName, transition]) => {
+    Object.entries(node.config.on || {}).forEach(([eventName, transition]) => {
+      if (
+        !transition ||
+        typeof transition === 'string' ||
+        // won't be needed in v5
+        '__xstatenode' in transition
+      ) {
+        return;
+      }
+      toCompactArray(transition).forEach((transition) => {
         if (
           !transition ||
           typeof transition === 'string' ||
@@ -207,24 +227,12 @@ export const introspectMachine = (machine: XState.StateNode) => {
         ) {
           return;
         }
-        toCompactArray(transition).forEach((transition) => {
-          if (
-            !transition ||
-            typeof transition === 'string' ||
-            // won't be needed in v5
-            '__xstatenode' in transition
-          ) {
-            return;
-          }
 
-          toCompactArray(transition.actions)
-            .filter((action): action is string => typeof action === 'string')
-            .forEach((action) => {
-              actions.addEventToItem(action, eventName, node.path);
-            });
+        getStringActions(transition.actions).forEach((action) => {
+          actions.addEventToItem(action, eventName, node.path);
         });
       });
-    }
+    });
 
     node.transitions?.forEach((transition) => {
       ((transition.target as unknown) as XState.StateNode[])?.forEach(
@@ -261,12 +269,10 @@ export const introspectMachine = (machine: XState.StateNode) => {
 
   allStateNodes.forEach((node) => {
     const allActions: string[] = [];
-    const stringEntryActions = toCompactArray(node.config.entry).filter(
-      (action): action is string => typeof action === 'string',
-    );
-    const stringExitActions = toCompactArray(node.config.exit).filter(
-      (action): action is string => typeof action === 'string',
-    );
+
+    const stringEntryActions = getStringActions(node.config.entry);
+    const stringExitActions = getStringActions(node.config.exit);
+
     allActions.push(...stringEntryActions);
     allActions.push(...stringExitActions);
 
@@ -291,5 +297,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
     actions: actions.toDataShape(),
     services: services.toDataShape(),
     activities: activities.toDataShape(),
+    delays: delays.toDataShape(),
   };
 };

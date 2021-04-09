@@ -1,5 +1,36 @@
 # xstate-codegen
 
+## 0.3.0
+
+### Minor Changes
+
+- 0fe4c14: Added support multiple for passing multiple input patterns.
+
+  Fixed a bug where new files added while watching would not be picked up.
+
+### Patch Changes
+
+- 0635d91: Added typings for actions.choose
+- 451deee: Added an es.js template to ensure that generated files work in ESM environments
+
+## 0.2.1
+
+### Patch Changes
+
+- c160dd4: Fix a bug where the nullish coalescing operator could not be used in targeted files
+- 5096139: Support delay configuration in machine options
+
+## 0.2.0
+
+### Minor Changes
+
+- febc994: Configuration properties such as actions, services, etc are now only required if there are entries missing from the base machine config
+
+### Patch Changes
+
+- 65dfea4: Fixed withConfig so that it's strongly typed to the options the machine requires.
+- e1b25e2: Fixed a bug where the second argument of interpret was being typed incorrectly.
+
 ## 0.1.3
 
 ### Patch Changes

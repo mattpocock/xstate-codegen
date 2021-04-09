@@ -82,14 +82,16 @@ const useTrafficLightMachine = () => {
 const interpretTrafficLightMachine = () => {
   // We use interpretCompiled instead of
   // interpret to avoid function overload problems
-  const interpreter = interpret(lightMachine, {
-    guards: {
-      isSuperCool: (context, event) => {
-        // Note that the event here is typed exactly
-        // to where the guard is used.
-        return event.duration === 0 && context.elapsed > 0;
+  const interpreter = interpret(
+    lightMachine.withConfig({
+      guards: {
+        isSuperCool: (context, event) => {
+          // Note that the event here is typed exactly
+          // to where the guard is used.
+          return event.duration === 0 && context.elapsed > 0;
+        },
       },
-    },
-  });
+    }),
+  );
   return interpreter;
 };
