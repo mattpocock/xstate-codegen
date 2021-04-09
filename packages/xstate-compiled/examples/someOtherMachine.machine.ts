@@ -20,7 +20,6 @@ interface FaceContext {
 
 const faceMachine = Machine<FaceContext, FaceEvent, 'faceMachine'>({
   type: 'parallel',
-  initial: undefined,
   states: {
     eyes: {
       initial: 'open',

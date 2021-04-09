@@ -84,13 +84,14 @@ gaze(pattern, {}, async function(err, watcher) {
       console.log(`Scanning File: `.cyan.bold + toRelative(filePath).gray);
       await addToCache(filePath);
     } catch (e) {
-      console.log(e);
       if (objectArgs.once) {
-        console.log('Could not complete due to errors'.red.bold);
+        console.log(`Could not complete due to errors in ${filePath}`.red.bold);
+        console.log(e);
         // @ts-ignore
         this.close();
         process.exit(1);
       }
+      console.log(e);
     }
   }, Promise.resolve());
 

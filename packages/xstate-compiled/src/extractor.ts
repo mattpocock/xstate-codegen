@@ -109,6 +109,7 @@ const object = (
 
 const optional = (t: TypeExtractor): TypeExtractor => ({
   extract(type: Type | undefined) {
+    // TODO: should this accept explicit undefined as well?
     if (!type) {
       return [false, undefined, false];
     }
