@@ -147,8 +147,6 @@ class ItemMap {
   }
 }
 
-const xstateRegex = /^xstate\./;
-
 export const introspectMachine = (machine: XState.StateNode) => {
   const guards = new ItemMap({
     checkIfOptional: (name) => Boolean(machine.options.guards[name]),
@@ -209,31 +207,6 @@ export const introspectMachine = (machine: XState.StateNode) => {
       services.addItem(service.src, node.path);
     });
 
-    Object.entries(node.config.on || {}).forEach(([eventName, transition]) => {
-      if (
-        !transition ||
-        typeof transition === 'string' ||
-        // won't be needed in v5
-        '__xstatenode' in transition
-      ) {
-        return;
-      }
-      toCompactArray(transition).forEach((transition) => {
-        if (
-          !transition ||
-          typeof transition === 'string' ||
-          // won't be needed in v5
-          '__xstatenode' in transition
-        ) {
-          return;
-        }
-
-        getStringActions(transition.actions).forEach((action) => {
-          actions.addEventToItem(action, eventName, node.path);
-        });
-      });
-    });
-
     node.transitions?.forEach((transition) => {
       ((transition.target as unknown) as XState.StateNode[])?.forEach(
         (targetNode) => {
@@ -264,6 +237,12 @@ export const introspectMachine = (machine: XState.StateNode) => {
           });
         },
       );
+
+      transition.actions
+        .filter((action) => !/^xstate\./.test(action.type))
+        .forEach((action) => {
+          actions.addEventToItem(action.type, transition.eventType, node.path);
+        });
     });
   });
 

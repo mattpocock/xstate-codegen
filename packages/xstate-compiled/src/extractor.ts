@@ -10,6 +10,8 @@ const knownActions = new Set([
   'SendAction',
 ]);
 
+const dummyNamedFunction = () => {};
+
 const findLastIndex = <T>(arr: T[], predicate: (el: T) => boolean): number => {
   for (let index = arr.length - 1; index >= 0; index--) {
     if (predicate(arr[index])) {
@@ -197,7 +199,7 @@ const func = (): TypeExtractor => ({
     if (!type?.getCallSignatures().length) {
       return [true, undefined];
     }
-    return [false, () => {}, true];
+    return [false, dummyNamedFunction, true];
   },
 });
 
@@ -227,7 +229,7 @@ const Action = (): TypeExtractor => ({
       return [true, undefined];
     }
 
-    return [false, () => {}, true];
+    return [false, dummyNamedFunction, true];
   },
 });
 const Actions = SingleOrArray(match([string(), func(), Action()]));
@@ -274,6 +276,7 @@ const State = object({
   after: optional(TransitionsMap),
   always: optional(SingleOrArray(Transition)),
   states: optional(lazy(() => States)),
+  onDone: optional(SingleOrArray(Transition)),
   // TODO: supported on final states, implement it
   // data: ?
   history: optional(match([string(['shallow', 'deep']), bool(true)])),

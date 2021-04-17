@@ -1,11 +1,11 @@
-import { Machine } from '@xstate/compiled';
+import { createMachine } from '@xstate/compiled';
 import { useMachine } from '@xstate/compiled/react';
 
 interface Context {}
 
 type Event = { type: 'CLICK' };
 
-const machine = Machine<Context, Event, 'mattFailThree'>({
+const machine = createMachine<Context, Event, 'mattFailThree'>({
   initial: 'notClicked',
   id: 'hasBeenClickedMachine',
   states: {

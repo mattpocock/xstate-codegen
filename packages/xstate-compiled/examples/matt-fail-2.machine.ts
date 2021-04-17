@@ -1,4 +1,4 @@
-import { Machine, send, assign } from '@xstate/compiled';
+import { createMachine, send, assign } from '@xstate/compiled';
 
 export type Attendee = {
   id: string;
@@ -43,7 +43,7 @@ type Event =
       data: string;
     };
 
-export const addViewingAttendeesMachine = Machine<
+export const addViewingAttendeesMachine = createMachine<
   Context,
   Event,
   'mattFailTwo'
@@ -227,16 +227,10 @@ export const addViewingAttendeesMachine = Machine<
         };
       }),
       showNameError: assign((context, event) => ({
-        errorMessage: intl.formatMessage({
-          defaultMessage: `You must provide a name for each guest`,
-          description: `An error that shows when the user has not provided enough invitee information`,
-        }) as string,
+        errorMessage: 'You must provide a name for each guest',
       })),
       showEmailError: assign((context, event) => ({
-        errorMessage: intl.formatMessage({
-          defaultMessage: `You must provide an email address for each guest`,
-          description: `An error that shows when the user has not provided enough invitee information`,
-        }) as string,
+        errorMessage: `You must provide an email address for each guest`,
       })),
       removeAttendee: assign((context, event) => {
         let attendeeIdsToDelete = new Set(context.attendeeIdsToDelete);
@@ -255,7 +249,7 @@ export const addViewingAttendeesMachine = Machine<
       addAttendee: assign((context, event) => {
         const newAttendee: Attendee = {
           ...event.attendeeWithoutId,
-          id: 1,
+          id: '1',
         };
         return {
           attendeesToCreate: [...context.attendeesToCreate, newAttendee],

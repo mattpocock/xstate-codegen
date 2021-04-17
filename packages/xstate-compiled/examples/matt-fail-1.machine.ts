@@ -1,4 +1,4 @@
-import { Machine, send, assign } from '@xstate/compiled';
+import { createMachine, send, assign } from '@xstate/compiled';
 
 export type AddUserParams = {
   name: string;
@@ -34,7 +34,7 @@ export type Event =
       };
     };
 
-export const addUserMachine = Machine<Context, Event, 'mattFailOne'>(
+export const addUserMachine = createMachine<Context, Event, 'mattFailOne'>(
   {
     id: 'addUserMachine',
     context: {
@@ -197,7 +197,7 @@ export const addUserMachine = Machine<Context, Event, 'mattFailOne'>(
             entry: 'reportCreateSuccessViaToast',
           },
           errored: {
-            onEntry: [send('REPORT_ERROR'), 'reportErrorViaToast'],
+            entry: [send('REPORT_ERROR'), 'reportErrorViaToast'],
           },
         },
       },
