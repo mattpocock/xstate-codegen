@@ -19,6 +19,7 @@
     "changeset": "changeset"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.16.0",
     "ts-node": "9.0.0"
   }
 }
