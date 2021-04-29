@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine } from '@xstate/compiled';
 import { useMachine } from '@xstate/compiled/react';
 
 type Data = {
@@ -14,7 +14,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'fetchMachineOptionalActions'>(
+const machine = createMachine<Context, Event, 'fetchMachineOptionalActions'>(
   {
     initial: 'idle',
     states: {

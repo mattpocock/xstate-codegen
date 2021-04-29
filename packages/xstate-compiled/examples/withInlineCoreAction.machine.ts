@@ -1,4 +1,4 @@
-import { createMachine, interpret } from '@xstate/compiled';
+import { createMachine, interpret, assign } from '@xstate/compiled';
 
 type Data = {
   yeah: boolean;
@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = createMachine<Context, Event, 'fetchMachine'>({
+const machine = createMachine<Context, Event, 'withInlineCoreAction'>({
   initial: 'idle',
   states: {
     idle: {
@@ -30,24 +30,19 @@ const machine = createMachine<Context, Event, 'fetchMachine'>({
       ],
     },
     success: {
-      entry: ['celebrate'],
+      entry: assign({
+        data: (ctx, event) => event.data,
+      }),
     },
   },
 });
 
-interpret(
-  machine.withConfig({
-    services: {
-      makeFetch: () => {
-        return Promise.resolve({
-          yeah: true,
-        });
-      },
+interpret(machine, {
+  services: {
+    makeFetch: () => {
+      return Promise.resolve({
+        yeah: true,
+      });
     },
-    actions: {
-      celebrate: (context, event) => {
-        console.log(event.data);
-      },
-    },
-  }),
-);
+  },
+});

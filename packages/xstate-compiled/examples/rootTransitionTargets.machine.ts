@@ -1,6 +1,6 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine, interpret } from '@xstate/compiled';
 
-const machine = Machine<
+const machine = createMachine<
   {},
   { type: 'EVENT' } | { type: 'EVENT2' },
   'rootTransitionTargets'

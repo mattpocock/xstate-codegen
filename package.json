@@ -14,9 +14,12 @@
     "packages/*"
   ],
   "scripts": {
-    "x": "yarn workspace xstate-codegen"
+    "x": "yarn workspace xstate-codegen",
+    "build": "npm run build --prefix packages/xstate-compiled",
+    "changeset": "changeset"
   },
   "devDependencies": {
-    "ts-node":"9.0.0"
+    "@changesets/cli": "^2.16.0",
+    "ts-node": "9.0.0"
   }
 }

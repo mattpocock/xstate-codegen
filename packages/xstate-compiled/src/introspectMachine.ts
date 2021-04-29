@@ -1,6 +1,6 @@
 import 'colors';
 import * as XState from 'xstate';
-import { toStateValue, toStatePaths, pathToStateValue } from 'xstate/lib/utils';
+import { toStatePaths, pathToStateValue } from 'xstate/lib/utils';
 import { getTransitionsFromNode } from './traversalUtils';
 
 export interface SubState {
@@ -25,6 +25,19 @@ export const getMatchesStates = (machine: XState.StateNode) => {
 
   return states;
 };
+
+const toCompactArray = <T>(maybeArray: T | T[] | undefined): T[] => {
+  if (!maybeArray) {
+    return [];
+  }
+  if (Array.isArray(maybeArray)) {
+    return maybeArray;
+  }
+  return [maybeArray];
+};
+
+const getStringActions = (_actions: any): string[] =>
+  toCompactArray(_actions).filter((action) => typeof action === 'string');
 
 const makeSubStateFromNode = (
   node: XState.StateNode,
@@ -134,8 +147,6 @@ class ItemMap {
   }
 }
 
-const xstateRegex = /^xstate\./;
-
 export const introspectMachine = (machine: XState.StateNode) => {
   const guards = new ItemMap({
     checkIfOptional: (name) => Boolean(machine.options.guards[name]),
@@ -164,14 +175,14 @@ export const introspectMachine = (machine: XState.StateNode) => {
     machine.getStateNodeById(id),
   );
 
-  allStateNodes?.forEach((node) => {
+  allStateNodes.forEach((node) => {
     nodeMaps[node.id] = {
       sources: new Set(),
       children: new Set(),
     };
   });
 
-  allStateNodes?.forEach((node) => {
+  allStateNodes.forEach((node) => {
     Object.values(node.states)?.forEach((childNode) => {
       nodeMaps[node.id].children.add(childNode.id);
     });
@@ -227,62 +238,31 @@ export const introspectMachine = (machine: XState.StateNode) => {
         },
       );
 
-      if (transition.actions) {
-        transition.actions?.forEach((action) => {
-          if (!xstateRegex.test(action.type)) {
-            actions.addEventToItem(
-              action.type,
-              transition.eventType,
-              node.path,
-            );
-          }
-          if (action.type === 'xstate.choose' && Array.isArray(action.conds)) {
-            action.conds.forEach(({ cond, actions: condActions }) => {
-              if (typeof cond === 'string') {
-                guards.addEventToItem(cond, transition.eventType, node.path);
-              }
-              if (Array.isArray(condActions)) {
-                condActions.forEach((condAction) => {
-                  if (typeof condAction === 'string') {
-                    actions.addEventToItem(
-                      condAction,
-                      transition.eventType,
-                      node.path,
-                    );
-                  }
-                });
-              } else if (typeof condActions === 'string') {
-                actions.addEventToItem(
-                  condActions,
-                  transition.eventType,
-                  node.path,
-                );
-              }
-            });
-          }
-          return {
-            name: action.type,
-            event: transition.eventType,
-          };
+      transition.actions
+        .filter((action) => !/^xstate\./.test(action.type))
+        .forEach((action) => {
+          actions.addEventToItem(action.type, transition.eventType, node.path);
         });
-      }
     });
   });
 
-  allStateNodes?.forEach((node) => {
-    const allActions: XState.ActionObject<any, any>[] = [];
-    allActions.push(...node.onExit);
-    allActions.push(...node.onEntry);
+  allStateNodes.forEach((node) => {
+    const allActions: string[] = [];
 
-    allActions?.forEach((action) => {
-      if (xstateRegex.test(action.type) || action.exec) return;
-      actions.addItem(action.type, node.path);
+    const stringEntryActions = getStringActions(node.config.entry);
+    const stringExitActions = getStringActions(node.config.exit);
+
+    allActions.push(...stringEntryActions);
+    allActions.push(...stringExitActions);
+
+    allActions.forEach((action) => {
+      actions.addItem(action, node.path);
     });
 
-    node.onEntry?.forEach((action) => {
+    stringEntryActions.forEach((action) => {
       const sources = nodeMaps[node.id].sources;
       sources?.forEach((source) => {
-        actions.addEventToItem(action.type, source, node.path);
+        actions.addEventToItem(action, source, node.path);
       });
     });
   });

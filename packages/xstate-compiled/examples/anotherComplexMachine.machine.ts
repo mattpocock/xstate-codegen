@@ -1,4 +1,4 @@
-import { Machine, send, assign } from '@xstate/compiled';
+import { createMachine, send, assign } from '@xstate/compiled';
 
 type Attendee = {
   name: string;
@@ -46,7 +46,7 @@ const assignAttendee = assign<
   };
 });
 
-export const addViewingAttendeesMachine = Machine<
+export const addViewingAttendeesMachine = createMachine<
   Context,
   Event,
   'addViewingAttendees'

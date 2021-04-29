@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = createMachine<Context, Event, 'fetchMachineNullishCoalesce'>({
+const machine = createMachine<Context, Event, 'withInlineFunction'>({
   initial: 'idle',
   states: {
     idle: {
@@ -28,30 +28,20 @@ const machine = createMachine<Context, Event, 'fetchMachineNullishCoalesce'>({
           onDone: 'success',
         },
       ],
+      entry: (ctx, event) => {
+        console.log(event.params.id);
+      },
     },
-    success: {
-      entry: ['celebrate'],
-    },
+    success: {},
   },
 });
 
-const input: { test: boolean | null } = {
-  test: null,
-};
-
-interpret(
-  machine.withConfig({
-    services: {
-      makeFetch: () => {
-        return Promise.resolve({
-          yeah: input?.test ?? true,
-        });
-      },
+interpret(machine, {
+  services: {
+    makeFetch: () => {
+      return Promise.resolve({
+        yeah: true,
+      });
     },
-    actions: {
-      celebrate: (context, event) => {
-        console.log(event.data);
-      },
-    },
-  }),
-);
+  },
+});

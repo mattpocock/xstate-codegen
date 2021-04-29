@@ -30,6 +30,7 @@ const fileCache: Record<
 > = {};
 
 printJsFiles();
+printToFile(fileCache, objectArgs.outDir);
 if (!onlyOnce) {
   console.clear();
 }
@@ -49,21 +50,32 @@ watcher.on('all', async (eventName, filePath) => {
   if (!isValidFile(filePath)) {
     return;
   }
-  let message = '';
+  const relativePath = toRelative(filePath).gray;
   if (eventName === 'add') {
-    message += `Scanning File: `.cyan.bold;
-    await addToCache(filePath);
+    console.log(`Scanning File: `.cyan.bold + ` ${relativePath}`);
+    try {
+      await addToCache(filePath);
+    } catch (err) {
+      console.log(
+        `Could not complete due to errors in ${relativePath}`.red.bold,
+      );
+      console.log(err);
+    }
   }
   if (eventName === 'change') {
-    message += `File Changed: `.yellow.bold;
-    await addToCache(filePath);
+    console.log(`File Changed: `.yellow.bold + ` ${relativePath}`);
+    try {
+      await addToCache(filePath);
+    } catch (err) {
+      console.log(
+        `Could not complete due to errors in ${relativePath}`.red.bold,
+      );
+      console.log(err);
+    }
   }
   if (eventName === 'unlink') {
-    message += `File Deleted: `.red.bold;
+    console.log(`File Deleted: `.red.bold + ` ${relativePath}`);
     removeFromCache(filePath);
-  }
-  if (message) {
-    console.log(`${message} ${toRelative(filePath).gray}`);
   }
   printToFile(fileCache, objectArgs.outDir);
 });
