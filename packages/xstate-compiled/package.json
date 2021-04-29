@@ -30,8 +30,6 @@
   },
   "scripts": {
     "build": "rm -rf bin && tsc && cp -r src/templates bin/templates",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run test && npm run build",
     "test": "node test.js",
     "test:watch": "nodemon test.js"
   },
