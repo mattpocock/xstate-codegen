@@ -58,7 +58,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.guards}}
       guards{{#unless this.machine.guards.required}}?{{/unless}}: {
         {{#each this.machine.guards.lines}}
-        "{{this.name}}"{{#unless this.required}}?{{/unless}}: (
+        '{{this.name}}'{{#unless this.required}}?{{/unless}}: (
           context: TContext,
             {{#if this.events}}
           event:
@@ -75,7 +75,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.actions}}
       actions{{#unless this.machine.actions.required}}?{{/unless}}: {  
         {{#each this.machine.actions.lines}}
-          "{{this.name}}"{{#unless this.required}}?{{/unless}}:
+          '{{this.name}}'{{#unless this.required}}?{{/unless}}:
             | ActionObject<
                 TContext,
                 {{#if this.events}}
@@ -114,7 +114,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.services}}
       services{{#unless this.machine.services.required}}?{{/unless}}: {
         {{#each this.machine.services.lines}}
-        "{{this.name}}"{{#unless this.required}}?{{/unless}}: InvokeCreator<
+        '{{this.name}}'{{#unless this.required}}?{{/unless}}: InvokeCreator<
           TContext, 
           {{#if this.events}}
           Extract<TEvent,
@@ -135,7 +135,7 @@ declare module '@xstate/compiled' {
       {{#if this.machine.activities}}
       activities{{#unless this.machine.activities.required}}?{{/unless}}: {
         {{#each this.machine.activities.lines}}    
-        "{{this.name}}"{{#unless this.required}}?{{/unless}}: ActivityConfig<TContext, TEvent>;
+        '{{this.name}}'{{#unless this.required}}?{{/unless}}: ActivityConfig<TContext, TEvent>;
         {{/each}}
       };
       {{/if}}
