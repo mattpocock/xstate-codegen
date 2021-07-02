@@ -1,4 +1,5 @@
 import {
+  AnyEventObject,
   EventObject,
   SingleOrArray,
   InvokeConfig,
@@ -21,7 +22,11 @@ import {
   assign,
   send,
   Expr,
+  Subscribable,
+  Sender,
+  Receiver,
   InterpreterOptions,
+  InvokeMeta,
 } from 'xstate';
 import {
   StateWithMatches,
@@ -35,6 +40,25 @@ import { StateNode } from 'xstate/lib/StateNode';
 
 declare module '@xstate/compiled' {
   type TwoLevelPartial<T extends object> = { [K in keyof T]?: Partial<T[K]>};
+
+  type InvokeCallback<
+    TEvent extends EventObject,
+    TSentEvent extends EventObject
+  > = (
+    callback: Sender<TSentEvent>,
+    onReceive: Receiver<TEvent>
+  ) => (() => void) | Promise<any> | void;
+
+  type NarrowedInvokeCreator<TContext, 
+    TEvent extends EventObject, 
+    TInitEvent extends EventObject, 
+    TFinalContext = any
+  > = 
+    (context: TContext, event: TInitEvent, meta: InvokeMeta) => 
+      | PromiseLike<TFinalContext> 
+      | StateMachine<TFinalContext, any, any> 
+      | Subscribable<EventObject> 
+      | InvokeCallback<any, TEvent>;
 
   /** Generated Types */
   {{#each machines}}
@@ -114,8 +138,9 @@ declare module '@xstate/compiled' {
       {{#if this.machine.services}}
       services{{#unless this.machine.services.required}}?{{/unless}}: {
         {{#each this.machine.services.lines}}
-        {{this.name}}{{#unless this.required}}?{{/unless}}: InvokeCreator<
+        {{this.name}}{{#unless this.required}}?{{/unless}}: NarrowedInvokeCreator<
           TContext, 
+          TEvent,
           {{#if this.events}}
           Extract<TEvent,
           {{#each this.events}}
