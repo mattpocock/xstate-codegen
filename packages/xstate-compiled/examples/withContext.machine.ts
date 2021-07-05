@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'withConfigTest'>({
+const machine = Machine<Context, Event, 'withContext'>({
   initial: 'idle',
   states: {
     idle: {
@@ -35,23 +35,8 @@ const machine = Machine<Context, Event, 'withConfigTest'>({
   },
 });
 
-/**
- * withConfig is a partial of the full options
- */
-machine.withConfig(
-  {
-    actions: {
-      // @ts-expect-error
-      wrongActionName: () => {},
-    },
-    services: {
-      // @ts-expect-error
-      wrongServiceName: () => {},
-    },
-  },
-  {
-    data: {
-      yeah: false
-    }
-  }
-);
+interpret(
+  machine.withContext({
+    data: { yeah: true }
+  }),
+)
