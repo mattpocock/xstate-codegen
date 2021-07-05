@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'fetchMachine'>({
+const machine = Machine<Context, Event, 'withContext'>({
   initial: 'idle',
   states: {
     idle: {
@@ -36,18 +36,7 @@ const machine = Machine<Context, Event, 'fetchMachine'>({
 });
 
 interpret(
-  machine.withConfig({
-    services: {
-      makeFetch: () => {
-        return Promise.resolve({
-          yeah: true,
-        });
-      },
-    },
-    actions: {
-      celebrate: (context, event) => {
-        console.log(event.data);
-      },
-    },
+  machine.withContext({
+    data: { yeah: true }
   }),
 )

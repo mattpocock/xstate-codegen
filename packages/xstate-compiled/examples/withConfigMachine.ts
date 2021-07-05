@@ -38,13 +38,20 @@ const machine = Machine<Context, Event, 'withConfigTest'>({
 /**
  * withConfig is a partial of the full options
  */
-machine.withConfig({
-  actions: {
-    // @ts-expect-error
-    wrongActionName: () => {},
+machine.withConfig(
+  {
+    actions: {
+      // @ts-expect-error
+      wrongActionName: () => {},
+    },
+    services: {
+      // @ts-expect-error
+      wrongServiceName: () => {},
+    },
   },
-  services: {
-    // @ts-expect-error
-    wrongServiceName: () => {},
-  },
-});
+  {
+    data: {
+      yeah: false
+    }
+  }
+);
