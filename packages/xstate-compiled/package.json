@@ -6,14 +6,7 @@
   "license": "MIT",
   "repository": "https://github.com/mattpocock/xstate-codegen",
   "dependencies": {
-    "@babel/core": "^7.10.4",
-    "@babel/helper-split-export-declaration": "^7.11.0",
-    "@babel/parser": "^7.10.4",
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.10.4",
-    "@babel/plugin-proposal-optional-chaining": "^7.10.4",
-    "@babel/plugin-transform-typescript": "^7.10.4",
-    "@rollup/plugin-babel": "^5.2.0",
-    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@babel/types": "^7.15.0",
     "babel-plugin-macros": "^2.8.0",
     "chokidar": "^3.4.3",
     "colors": "^1.4.0",
@@ -23,7 +16,7 @@
     "pkg-up": "^3.1.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.26.3",
-    "xstate": "^4.12.0"
+    "xstate-parser-demo": "^0.0.18"
   },
   "devDependencies": {
     "@changesets/cli": "^2.9.2",
@@ -37,7 +30,11 @@
     "@types/rimraf": "^3.0.0",
     "@xstate/react": "^0.8.1",
     "nodemon": "2.0.4",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "xstate": "^4.23.3"
+  },
+  "peerDependencies": {
+    "xstate": "^4.12.0"
   },
   "scripts": {
     "local-link": "yarn unlink && npm run build && npm run chmod:index && yarn link",
