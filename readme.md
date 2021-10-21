@@ -1,3 +1,5 @@
+> XState Codegen is deprecated - we'll be bringing this exploratory work into XState core. We're convinced that typegen is the future of good typing in XState, and syncing it with core (and the XState VSCode extension) is the future.
+
 ## Type Safe State Machines
 
 `xstate-codegen` gives you 100% type-safe usage of XState in Typescript. [Try it out at this codesandbox!](https://codesandbox.io/s/xstate-codegen-example-7etw2?file=/src/demo.machine.ts)
