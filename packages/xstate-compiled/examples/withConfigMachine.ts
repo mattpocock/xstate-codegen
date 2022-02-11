@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine } from '@xstate/compiled';
 
 type Data = {
   yeah: boolean;
@@ -13,7 +13,7 @@ type Event =
   | { type: 'CANCEL' }
   | { type: 'done.invoke.makeFetch'; data: Data };
 
-const machine = Machine<Context, Event, 'withConfigTest'>({
+const machine = createMachine<Context, Event, 'withConfigTest'>({
   initial: 'idle',
   states: {
     idle: {

@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine } from '@xstate/compiled';
 import { useMachine } from '@xstate/compiled/react';
 
 interface Context {}
@@ -9,7 +9,7 @@ type Event = { type: 'MAKE_FETCH' };
  * Ensures that optional parameters register as non-required
  * when passed in as a second param
  */
-const machine = Machine<Context, Event, 'optionsMachine'>(
+const machine = createMachine<Context, Event, 'optionsMachine'>(
   {
     initial: 'idle',
     states: {
@@ -35,7 +35,6 @@ const machine = Machine<Context, Event, 'optionsMachine'>(
           NON_REQUIRED_DELAY: 'next',
           REQUIRED_DELAY: { target: 'next', cond: 'delayedCond' },
         },
-        activities: ['requiredActivity', 'nonRequiredActivity'],
       },
       next: {},
     },
@@ -46,9 +45,6 @@ const machine = Machine<Context, Event, 'optionsMachine'>(
     },
     services: {
       nonRequiredService: async () => {},
-    },
-    activities: {
-      nonRequiredActivity: () => {},
     },
     guards: {
       nonRequiredCond: () => false,
@@ -66,9 +62,6 @@ const useOptions = () =>
     },
     services: {
       requiredService: async () => {},
-    },
-    activities: {
-      requiredActivity: () => {},
     },
     guards: {
       requiredCond: () => true,

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "types": [
-      "node",
+      "node"
     ],
     "allowJs": true,
     "esModuleInterop": true,
@@ -11,9 +11,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "strictNullChecks": true,
-    "outDir": "bin"
+    "outDir": "bin",
+    "baseUrl": "src",
+    "noEmitOnError": false,
+    "target": "ES2017",
+    "module": "CommonJS",
+    "lib": ["ES2020"]
   },
-  "include": [
-    "src",
-  ]
+  "include": ["src"]
 }

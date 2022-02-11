@@ -1,4 +1,4 @@
-import { Machine, interpret } from '@xstate/compiled';
+import { createMachine } from '@xstate/compiled';
 import { useMachine } from '@xstate/compiled/react';
 
 type FaceEvent =
@@ -18,9 +18,8 @@ interface FaceContext {
   elapsed: number;
 }
 
-const faceMachine = Machine<FaceContext, FaceEvent, 'faceMachine'>({
+const faceMachine = createMachine<FaceContext, FaceEvent, 'faceMachine'>({
   type: 'parallel',
-  initial: undefined,
   states: {
     eyes: {
       initial: 'open',
